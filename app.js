@@ -11,9 +11,13 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 8000;
 
+app.use("/", (req, res, next) => {
+  return res.status(200).send("<h1>Welcome</h1>");
+});
+
 // Incorrect Path
 app.use("/", (req, res, next) => {
-  res.status(404).json({ message: "Path not found" });
+  return res.status(404).json({ message: "Path not found" });
 });
 
 // Handler Error
