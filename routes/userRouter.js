@@ -16,103 +16,17 @@ userRouter.get("/info/:userId", async (req, res, next) => {
 
     const findUserDetail = await User.findOne({
       where: { id: userId },
-      // include: [
-      //   {
-      //     model: UserPlace,
-      //     attributes: [["user_id_who_got_edit", "canEditId"]],
-      //     // include: [
-      //     //   {
-      //     //     model: User,
-      //     //   },
-      //     // ],
-      //   },
-      // ],
     });
 
-    // const userDownLine = [];
-    // // console.log(findUserDetail[0].UserPlaces);
-    // findUserDetail[0].UserPlaces.map((item) => {
-    //   // console.log(item.userIdWhoGotEdit);
-    //   userDownLine.push(item.userIdWhoGotEdit);
-    // });
-    // console.log(userDownLine, "userDownLine");
-
-    // const findUserDetailUpperLevel = await UserPlace.findAll({
-    //   where: {
-    //     userIdWhoGotEdit: userDownLine,
-    //   },
-    // });
-
-    // console.log(findUserDetailUpperLevel, "findUserDetailUpperLevel");
-
-    // // ------ TEST 2 ------
-    // const relateUserIdUp = [];
-    // const relateUserIdDown = [];
-    // const relateUserIdDown2 = [];
-    // const relateUserIdDown3 = [];
-
-    // const idThatThisUserWillGotEdit = await UserPlace.findAll({
-    //   where: { userIdWhoGotEdit: userId },
-    // });
-    // // console.log(idThatThisUserWillGotEdit);
-    // idThatThisUserWillGotEdit.map((item) => {
-    //   // console.log(item);
-    //   relateUserIdUp.push(item.userIdWhoCanEdit);
-    // });
-
-    // const idThatThisUserCanEdit = await UserPlace.findAll({
-    //   where: { userIdWhoCanEdit: userId },
-    // });
-    // // console.log(idThatThisUserCanEdit);
-    // idThatThisUserCanEdit.map((item) => {
-    //   // console.log(item);
-    //   relateUserIdDown.push(item.userIdWhoGotEdit);
-    // });
-
-    // console.log(relateUserIdUp, "relateUserIdUp");
-    // console.log(relateUserIdDown, "relateUserIdDown");
-
-    // const thisIdHadDownLine2 = await UserPlace.findAll({
-    //   where: { userIdWhoCanEdit: relateUserIdDown },
-    // });
-    // // console.log(thisIdHadDownLine2, "thisIdHadDownLine2");
-    // thisIdHadDownLine2.map((item) => {
-    //   // console.log(item);
-    //   relateUserIdDown2.push(item.userIdWhoGotEdit);
-    // });
-    // console.log(relateUserIdDown2, "relateUserIdDown2");
-
-    // const thisIdHadDownLine3 = await UserPlace.findAll({
-    //   where: { userIdWhoCanEdit: relateUserIdDown2 },
-    // });
-    // // console.log(thisIdHadDownLine3, "thisIdHadDownLine3");
-    // thisIdHadDownLine3.map((item) => {
-    //   // console.log(item);
-    //   relateUserIdDown3.push(item.userIdWhoGotEdit);
-    // });
-    // console.log(relateUserIdDown3, "relateUserIdDown3");
-
-    // // ------ TEST 2 ------ END
-
-    // ------ TEST 3 ------
     let headUserId = [userId];
-    let downLineId_headUserId = [];
-
     const headUserId_All_DownLineUserId = [];
 
     let downLineUserId_forFn = [];
 
-    // let findDownLineOfThisHead = await UserPlace.findAll({
-    //   // attributes: [["user_id_who_got_edit", "canEditId"]],
-    //   where: { user_id_who_can_edit: HeadUserId },
-    // });
-
-    // console.log(findDownLineOfThisHead);
-
-    async function findDownLineOfThisHead_Fn(headIdArr) {
-      for (let i = 0; i < headIdArr.length; i++) {
+    async function findDownLineOfThisHead_Fn(headIdArrParam) {
+      for (let i = 0; i < headIdArrParam.length; i++) {
         const result_findDownLineOfThisHead_Fn = await UserPlace.findAll({
-          where: { userIdWhoCanEdit: headIdArr[i] },
+          where: { userIdWhoCanEdit: headIdArrParam[i] },
         });
 
         for (let i = 0; i < result_findDownLineOfThisHead_Fn.length; i++) {
@@ -137,10 +51,8 @@ userRouter.get("/info/:userId", async (req, res, next) => {
             );
           }
         }
-        // console.log(headUserId_All_DownLineUserId, "140");
-        // console.log(downLineUserId_forFn, "141");
-
-        // return result_findDownLineOfThisHead_Fn;
+        // console.log(headUserId_All_DownLineUserId, "54");
+        // console.log(downLineUserId_forFn, "55");
       }
 
       for (let i = 0; i < downLineUserId_forFn.length; i++) {
@@ -170,60 +82,32 @@ userRouter.get("/info/:userId", async (req, res, next) => {
             );
           }
         }
+        // console.log(headUserId_All_DownLineUserId, "85");
+        // console.log(downLineUserId_forFn, "86");
       }
     }
 
-    const test = await findDownLineOfThisHead_Fn(headUserId);
-    // console.log(test);
-    // test.forEach((item) => console.log(item.userIdWhoGotEdit));
-    // console.log(headUserId_All_DownLineUserId, "148");
-    // console.log(downLineUserId_forFn, "149");
+    const RunQueryFunction = await findDownLineOfThisHead_Fn(headUserId);
+    // console.log(headUserId_All_DownLineUserId, "91");
+    // console.log(downLineUserId_forFn, "92");
 
     // find user down line WHO not place
     const findNotPlaceUserDownLine = await User.findAll({
       where: { id: headUserId_All_DownLineUserId, placePosition: null },
     });
+    // --------------------------------------
 
-    return res.status(400).json({
-      message: "TEST",
-      findUserDetail,
-      // downLineUserId_forFn: downLineUserId_forFn,
-      headUserId_All_DownLineUserId: headUserId_All_DownLineUserId,
-      findNotPlaceUserDownLine,
-    });
-
-    // console.log(findDownLineOfThisHead.length); // หา length เอาไปทำ for loop
-
-    // for loop push UserId ที่เป็น downLine เข้าไป
-    for (let i = 0; i < findDownLineOfThisHead.length; i++) {
-      // console.log(findDownLineOfThisHead[i].userIdWhoGotEdit);
-      if (
-        !headUserId_All_DownLineUserId.includes(
-          findDownLineOfThisHead[i].userIdWhoGotEdit
-        ) // check ว่า ถ้ามีค่าซ้ำ เราจะไม่ยัดอันใหม่ลงไป
-      ) {
-        headUserId_All_DownLineUserId.push(
-          findDownLineOfThisHead[i].userIdWhoGotEdit
-        );
-      }
-    }
-
-    console.log({
-      headUserId_All_DownLineUserId: headUserId_All_DownLineUserId,
-    });
-
-    headUserId_All_DownLineUserId.forEach((item) => {
-      console.log(item);
-    });
-
-    return res.status(200).json({ HeadUserId, findDownLineOfThisHead });
-    // ------ TEST 3 ------ END
+    headUserId_All_DownLineUserId.sort((a, b) => a - b);
+    findUserDetail.dataValues.downLineUser = headUserId_All_DownLineUserId;
 
     if (!findUserDetail) {
       return res.status(400).json({ message: "This user not found" });
     }
 
-    res.status(200).json({ findUserDetail });
+    return res.status(200).json({
+      user: findUserDetail,
+      downLineNotPlace: findNotPlaceUserDownLine,
+    });
   } catch (err) {
     console.log(err);
   }
