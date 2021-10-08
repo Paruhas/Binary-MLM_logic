@@ -212,6 +212,7 @@ userRouter.patch("/:id/place", async (req, res, next) => {
       findPlaceUserDetail.placePosition !== null ||
       findPlaceUserDetail.headIsUserId !== null
     ) {
+      // console.log(findPlaceUserDetail);
       return res
         .status(400)
         .json({ message: "This user you want to place has already place" });
@@ -297,6 +298,7 @@ userRouter.patch("/:id/place", async (req, res, next) => {
         headIsUserId: null,
       },
     });
+    // console.log(findAll_userDownLine_notPlace, "findAll_userDownLine_notPlace");
 
     /**
      * This function use to check param 1 and param 2 are matched.
@@ -360,6 +362,12 @@ userRouter.patch("/:id/place", async (req, res, next) => {
     );
     // console.log(placePositionCondition, "placePositionCondition");
 
+    if (placePositionCondition.headLineId.length !== 1) {
+      return res.status(400).json({
+        message: "Head user must be only one",
+      });
+    }
+
     /**
      * use Reduce to filter in Async/Await.
      * find that `placeAtHeadUserId` user is the same Binary Line with `placeId`.
@@ -392,6 +400,27 @@ userRouter.patch("/:id/place", async (req, res, next) => {
     }
 
     /**
+     * Validate: if Place Id is not the same as This User Id
+     * `headUser must be already place first`
+     */
+
+    if (placeAtHeadUserId !== id) {
+      Promise.all(
+        findAll_userDownLine_notPlace.map(async (item) => {
+          // console.log(item.dataValues);
+          // console.log(item.id);
+          // console.log(placeId);
+
+          if (item.id === +placeAtHeadUserId) {
+            return res.status(400).json({
+              message: "This head user is not yet place in Binary line",
+            });
+          }
+        })
+      );
+    }
+
+    /**
      * Validate: find `placeAtHeadUserId`'s `Left` and/or `Right` Leg is available to place
      */
     const findDetail_placeAtHeadUserId = await User.findAll({
@@ -403,14 +432,17 @@ userRouter.patch("/:id/place", async (req, res, next) => {
     }
 
     if (findDetail_placeAtHeadUserId.length === 1) {
-      if (findDetail_placeAtHeadUserId.placePosition === placePosition) {
+      if (findDetail_placeAtHeadUserId[0].placePosition === placePosition) {
         return res
           .status(400)
           .json({ message: "This headUser's leg is now reserve" });
       }
     }
 
-    // validate headUser must be place first!! (if not headLineId) { headLineId: [], memberLineId: [] }
+    // console.log(
+    //   findDetail_placeAtHeadUserId.length,
+    //   "findDetail_placeAtHeadUserId"
+    // );
 
     const updateResult = await User.update(
       { headIsUserId: placeAtHeadUserId, placePosition: placePosition },
@@ -423,12 +455,12 @@ userRouter.patch("/:id/place", async (req, res, next) => {
       return res.status(400).json({ message: "update database error" });
     }
 
-    res.status(200).json({
+    res.status(204).json({
       message: "update database successful",
-      userWantToPlace,
-      findAll_userDownLine_notPlace,
-      findDetail_placeAtHeadUserId,
-      updateResult,
+      // userWantToPlace,
+      // findAll_userDownLine_notPlace,
+      // findDetail_placeAtHeadUserId,
+      // updateResult,
     });
   } catch (err) {
     console.log(err);
