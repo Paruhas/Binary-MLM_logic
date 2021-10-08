@@ -36,3 +36,25 @@ const findUserPlace = UserPlace.filter((item) => {
   return findUser.id == item.userIdWhoCanEdit;
 }, {});
 console.log(findUserPlace);
+
+// ----- -----
+
+const headId = "3";
+const placeId = "6";
+
+const output1 = [6, 7, 11, 12, 13, 14, 21];
+
+const reduceOutput1 = output1.reduce(
+  (acc, item) => {
+    if (item === +placeId) {
+      acc["headLineId"].push(+headId);
+    }
+    if (item !== +placeId) {
+      acc["memberLineId"].push(item);
+    }
+    return acc;
+  },
+  { headLineId: [], memberLineId: [] }
+);
+
+console.log(reduceOutput1, "reduceOutput1");
