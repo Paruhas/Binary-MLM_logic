@@ -58,3 +58,17 @@ const reduceOutput1 = output1.reduce(
 );
 
 console.log(reduceOutput1, "reduceOutput1");
+
+const validateTests = ["L", "R"];
+let validateCount = 0;
+
+validateTests.map((item) => {
+  if (item !== "A") {
+    validateCount += 1;
+  }
+  if (item !== "A") {
+    validateCount += 1;
+  }
+});
+
+console.log(validateCount);
