@@ -1,4 +1,3 @@
-const express = require("express");
 const { User, UserPlace, sequelize } = require("../models");
 
 exports.getUserPage = (req, res, next) => {
@@ -6,6 +5,7 @@ exports.getUserPage = (req, res, next) => {
     res.status(200).send("<h1>This is User path</h1>");
   } catch (err) {
     console.log(err);
+    next(error);
   }
 };
 
@@ -114,13 +114,24 @@ exports.getUserInfo = async (req, res, next) => {
     });
   } catch (err) {
     console.log(err);
+    next(error);
   }
 };
 
 exports.register = async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
     const { username } = req.body;
     let haveRefFromId = false;
+
+    if (!username || !username.trim()) {
+      throw new CustomError(400, "username is require");
+    }
+
+    // handler Reference Code
+    if (!req.body.refFrom || !req.body.refFrom.trim()) {
+      req.body.refFrom = null;
+    }
 
     // Check duplicate username
     const thisUsernameIsDuplicate = await User.findOne({
@@ -128,14 +139,7 @@ exports.register = async (req, res, next) => {
     });
 
     if (thisUsernameIsDuplicate) {
-      return res
-        .status(400)
-        .json({ message: "This username already in database" });
-    }
-
-    // handler Reference Code
-    if (!req.body.refFrom || !req.body.refFrom.trim()) {
-      req.body.refFrom = null;
+      throw new CustomError(400, "This username already in database");
     }
 
     const findRefFrom = await User.findOne({
@@ -144,7 +148,7 @@ exports.register = async (req, res, next) => {
 
     if (req.body.refFrom) {
       if (!findRefFrom) {
-        return res.status(400).json({ message: "No ref code in database" });
+        throw new CustomError(400, "No ref code in database");
       }
       haveRefFromId = true;
     }
@@ -162,25 +166,41 @@ exports.register = async (req, res, next) => {
     }
 
     // if (haveRefFromId)
-    const createNewUser = await User.create({
-      username: username,
-      thisUserRef: Date.now(),
-      refFrom: req.body.refFrom,
-      refFromId: haveRefFromId ? findRefFrom.id : null,
-    });
+    const createNewUser = await User.create(
+      {
+        username: username,
+        thisUserRef: Date.now(),
+        refFrom: req.body.refFrom,
+        refFromId: haveRefFromId ? findRefFrom.id : null,
+      },
+      {
+        transaction: transaction,
+      }
+    );
 
-    const createBinaryMap = await UserPlace.create({
-      userIdWhoCanEdit: findRefFrom.id,
-      userIdWhoGotEdit: createNewUser.id,
-    });
+    const createBinaryMap = await UserPlace.create(
+      {
+        userIdWhoCanEdit: findRefFrom.id,
+        userIdWhoGotEdit: createNewUser.id,
+      },
+      {
+        transaction: transaction,
+      }
+    );
+
+    await transaction.commit();
 
     res.status(201).json({ createNewUser, createBinaryMap });
   } catch (err) {
+    await transaction.rollback();
+
     console.log(err);
+    next(error);
   }
 };
 
 exports.placeDownLine = async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
     const { id } = req.params;
     const { placeId, placeAtHeadUserId, placePosition } = req.body;
@@ -198,18 +218,14 @@ exports.placeDownLine = async (req, res, next) => {
       })
     );
     if (validatePlacePosition_count === 4) {
-      return res
-        .status(400)
-        .json({ message: "placePosition value are invalid" });
+      throw new CustomError(400, "placePosition value are invalid");
     }
 
     if (id == placeId) {
-      return res.status(400).json({ message: "You cannot place yourself" });
+      throw new CustomError(400, "You cannot place yourself");
     }
     if (placeId == placeAtHeadUserId) {
-      return res
-        .status(400)
-        .json({ message: "placeAtHeadUserId must not equal to placeId" });
+      throw new CustomError(400, "placeAtHeadUserId must not equal to placeId");
     }
 
     const findUserDetail = await User.findOne({
@@ -217,7 +233,7 @@ exports.placeDownLine = async (req, res, next) => {
     });
 
     if (!findUserDetail) {
-      return res.status(400).json({ message: "This user not found" });
+      throw new CustomError(400, "This user not found");
     }
 
     const findPlaceUserDetail = await User.findOne({
@@ -225,17 +241,7 @@ exports.placeDownLine = async (req, res, next) => {
     });
 
     if (!findPlaceUserDetail) {
-      return res
-        .status(400)
-        .json({ message: "This user you want to place not found" });
-    }
-
-    const findPlaceAtHeadUserIdUserDetail = await User.findOne({
-      where: { id: placeAtHeadUserId },
-    });
-
-    if (!findPlaceAtHeadUserIdUserDetail) {
-      return res.status(400).json({ message: "This head user not found" });
+      throw new CustomError(400, "This user you want to place not found");
     }
 
     if (
@@ -243,9 +249,18 @@ exports.placeDownLine = async (req, res, next) => {
       findPlaceUserDetail.headIsUserId !== null
     ) {
       // console.log(findPlaceUserDetail);
-      return res
-        .status(400)
-        .json({ message: "This user you want to place has already place" });
+      throw new CustomError(
+        400,
+        "This user you want to place has already place"
+      );
+    }
+
+    const findPlaceAtHeadUserIdUserDetail = await User.findOne({
+      where: { id: placeAtHeadUserId },
+    });
+
+    if (!findPlaceAtHeadUserIdUserDetail) {
+      throw new CustomError(400, "This head user not found");
     }
 
     // find DownLine User section
@@ -365,9 +380,10 @@ exports.placeDownLine = async (req, res, next) => {
     );
 
     if (userWantToPlace.length !== 1) {
-      return res.status(400).json({
-        message: "This user you want to place not found / or not you down line",
-      });
+      throw new CustomError(
+        400,
+        "This user you want to place not found / or not you down line"
+      );
     }
 
     // console.log(headUserId_All_DownLineUserId, "headUserId_All_DownLineUserId");
@@ -393,9 +409,7 @@ exports.placeDownLine = async (req, res, next) => {
     // console.log(placePositionCondition, "placePositionCondition");
 
     if (placePositionCondition.headLineId.length !== 1) {
-      return res.status(400).json({
-        message: "Head user must be only one",
-      });
+      throw new CustomError(400, "Head user must be only one");
     }
 
     /**
@@ -424,9 +438,10 @@ exports.placeDownLine = async (req, res, next) => {
     // );
 
     if (isHeadPositionIsSameBinaryLine.length === 0) {
-      return res.status(400).json({
-        message: "This head user is not in the same Binary line",
-      });
+      throw new CustomError(
+        400,
+        "This head user is not in the same Binary line"
+      );
     }
 
     /**
@@ -442,9 +457,10 @@ exports.placeDownLine = async (req, res, next) => {
           // console.log(placeId);
 
           if (item.id === +placeAtHeadUserId) {
-            return res.status(400).json({
-              message: "This head user is not yet place in Binary line",
-            });
+            throw new CustomError(
+              400,
+              "This head user is not yet place in Binary line"
+            );
           }
         })
       );
@@ -458,14 +474,12 @@ exports.placeDownLine = async (req, res, next) => {
     });
 
     if (findDetail_placeAtHeadUserId.length >= 2) {
-      return res.status(400).json({ message: "This headUser's leg is full" });
+      throw new CustomError(400, "This headUser's leg is full");
     }
 
     if (findDetail_placeAtHeadUserId.length === 1) {
       if (findDetail_placeAtHeadUserId[0].placePosition === placePosition) {
-        return res
-          .status(400)
-          .json({ message: "This headUser's leg is now reserve" });
+        throw new CustomError(400, "This headUser's leg is now reserve");
       }
     }
 
@@ -478,21 +492,29 @@ exports.placeDownLine = async (req, res, next) => {
       { headIsUserId: placeAtHeadUserId, placePosition: placePosition },
       {
         where: { id: placeId },
+      },
+      {
+        transaction: transaction,
       }
     );
 
     if (!updateResult) {
-      return res.status(400).json({ message: "update database error" });
+      throw new CustomError(400, "update database error");
     }
 
+    await transaction.commit();
+
     res.status(204).json({
-      message: "update database successful",
+      message: "update user database successful",
       // userWantToPlace,
       // findAll_userDownLine_notPlace,
       // findDetail_placeAtHeadUserId,
       // updateResult,
     });
   } catch (err) {
+    await transaction.rollback();
+
     console.log(err);
+    next(error);
   }
 };

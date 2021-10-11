@@ -18,7 +18,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      //  Where get Place
+      /**
+       * Binary tree Position(Where get Place)
+       */
       placePosition: {
         type: DataTypes.ENUM("L", "R"),
         allowNull: true,
@@ -32,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      timestamps: false,
+      timestamps: true,
     }
   );
 
@@ -48,6 +50,17 @@ module.exports = (sequelize, DataTypes) => {
     User.hasOne(models.UserPlace, {
       foreignKey: {
         name: "userIdWhoGotEdit",
+      },
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
+    });
+
+    /**
+     * check อีกรอบด้วย
+     */
+    User.hasMany(models.OrderHistory_PackageBuy, {
+      foreignKey: {
+        name: "userId",
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
