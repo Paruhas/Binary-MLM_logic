@@ -1,7 +1,7 @@
 class CustomError extends Error {
   constructor(httpStatusCode, message) {
-    this.httpStatusCode = httpStatusCode;
     super(message);
+    this.httpStatusCode = httpStatusCode;
   }
 }
 

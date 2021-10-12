@@ -25,8 +25,8 @@ app.use("/order", orderRouter);
 
 // Handler Error
 app.use((err, req, res, next) => {
-  if (err.statusCode) {
-    return res.status(err.statusCode).json({ message: err.message });
+  if (err.httpStatusCode) {
+    return res.status(err.httpStatusCode).json({ message: err.message });
   }
   if (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError")
     return res.status(401).json({ message: err.message }); // ดัก Error จากการ Auth Token
@@ -43,6 +43,6 @@ app.use("/", (req, res, next) => {
 });
 
 // const { sequelize } = require("./models");
-// sequelize.sync({ force: false }).then(() => console.log("DB sync"));
+// sequelize.sync({ force: true }).then(() => console.log("DB sync"));
 
 app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));

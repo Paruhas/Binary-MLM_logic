@@ -1,11 +1,12 @@
 const { User, UserPlace, sequelize } = require("../models");
+const CustomError = require("../utils/CustomError");
 
 exports.getUserPage = (req, res, next) => {
   try {
     res.status(200).send("<h1>This is User path</h1>");
   } catch (err) {
     console.log(err);
-    next(error);
+    next(err);
   }
 };
 
@@ -114,7 +115,7 @@ exports.getUserInfo = async (req, res, next) => {
     });
   } catch (err) {
     console.log(err);
-    next(error);
+    next(err);
   }
 };
 
@@ -195,7 +196,7 @@ exports.register = async (req, res, next) => {
     await transaction.rollback();
 
     console.log(err);
-    next(error);
+    next(err);
   }
 };
 
@@ -299,6 +300,8 @@ exports.placeDownLine = async (req, res, next) => {
         }
         // console.log(headUserId_All_DownLineUserId, "54");
         // console.log(downLineUserId_forFn, "55");
+
+        // return await result_findDownLineOfThisHead_Fn;
       }
 
       for (let i = 0; i < downLineUserId_forFn.length; i++) {
@@ -330,10 +333,91 @@ exports.placeDownLine = async (req, res, next) => {
         }
         // console.log(headUserId_All_DownLineUserId, "85");
         // console.log(downLineUserId_forFn, "86");
+
+        // return await result_findDownLineOfThisHead_Fn;
       }
     }
 
     const RunQueryFunction = await findDownLineOfThisHead_Fn(headUserId);
+
+    // find HeadLine User section
+    // let headUserId = [id]; // เอามาจากด้านบน
+    const headUserId_All_UpLineUserId = [];
+
+    let upLineUserId_forFn = [];
+
+    async function findUpLineOfThisHead_Fn(headIdArrParam) {
+      for (let i = 0; i < headIdArrParam.length; i++) {
+        const result_findUpLineOfThisHead_Fn = await UserPlace.findAll({
+          where: { userIdWhoGotEdit: headIdArrParam[i] },
+        });
+
+        for (let i = 0; i < result_findUpLineOfThisHead_Fn.length; i++) {
+          // console.log(result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit);
+          if (
+            !headUserId_All_UpLineUserId.includes(
+              result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit
+            ) // check ว่า ถ้ามีค่าซ้ำ เราจะไม่ยัดอันใหม่ลงไป
+          ) {
+            headUserId_All_UpLineUserId.push(
+              result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit
+            );
+          }
+
+          if (
+            !upLineUserId_forFn.includes(
+              result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit
+            ) // check ว่า ถ้ามีค่าซ้ำ เราจะไม่ยัดอันใหม่ลงไป
+          ) {
+            upLineUserId_forFn.push(
+              result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit
+            );
+          }
+        }
+        // console.log(headUserId_All_UpLineUserId, "54");
+        // console.log(upLineUserId_forFn, "55");
+
+        // return await result_findUpLineOfThisHead_Fn;
+      }
+
+      for (let i = 0; i < upLineUserId_forFn.length; i++) {
+        const result_findUpLineOfThisHead_Fn = await UserPlace.findAll({
+          where: { userIdWhoGotEdit: upLineUserId_forFn[i] },
+        });
+
+        for (let i = 0; i < result_findUpLineOfThisHead_Fn.length; i++) {
+          // console.log(result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit);
+          if (
+            !headUserId_All_UpLineUserId.includes(
+              result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit
+            ) // check ว่า ถ้ามีค่าซ้ำ เราจะไม่ยัดอันใหม่ลงไป
+          ) {
+            headUserId_All_UpLineUserId.push(
+              result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit
+            );
+          }
+
+          if (
+            !upLineUserId_forFn.includes(
+              result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit
+            ) // check ว่า ถ้ามีค่าซ้ำ เราจะไม่ยัดอันใหม่ลงไป
+          ) {
+            upLineUserId_forFn.push(
+              result_findUpLineOfThisHead_Fn[i].userIdWhoCanEdit
+            );
+          }
+        }
+        // console.log(headUserId_All_UpLineUserId, "85");
+        // console.log(upLineUserId_forFn, "86");
+
+        // return await result_findUpLineOfThisHead_Fn;
+      }
+    }
+
+    const RunQueryFunction2 = await findUpLineOfThisHead_Fn(headUserId);
+    // console.log(RunQueryFunction2);
+    // console.log(headUserId_All_UpLineUserId);
+    // console.log(upLineUserId_forFn);
 
     const findAll_userDownLine_notPlace = await User.findAll({
       // attributes: ["id", "username"],
@@ -343,7 +427,7 @@ exports.placeDownLine = async (req, res, next) => {
         headIsUserId: null,
       },
     });
-    // console.log(findAll_userDownLine_notPlace, "findAll_userDownLine_notPlace");
+    console.log(findAll_userDownLine_notPlace, "findAll_userDownLine_notPlace");
 
     /**
      * This function use to check param 1 and param 2 are matched.
@@ -386,6 +470,8 @@ exports.placeDownLine = async (req, res, next) => {
       );
     }
 
+    // throw new CustomError(999, "473");
+
     // console.log(headUserId_All_DownLineUserId, "headUserId_All_DownLineUserId");
 
     /**
@@ -395,6 +481,7 @@ exports.placeDownLine = async (req, res, next) => {
      * his reduce [headUserId_All_DownLineUserId] swap `data === placeId(req.body)` with `headId(id in req.params)`
      */
     const placePositionCondition = await headUserId_All_DownLineUserId.reduce(
+      //////////////////////////////////////
       async (acc, item) => {
         if (item === +placeId) {
           (await acc)["headLineId"].push(+id);
@@ -406,7 +493,7 @@ exports.placeDownLine = async (req, res, next) => {
       },
       { headLineId: [], memberLineId: [] }
     );
-    // console.log(placePositionCondition, "placePositionCondition");
+    console.log(placePositionCondition, "placePositionCondition");
 
     if (placePositionCondition.headLineId.length !== 1) {
       throw new CustomError(400, "Head user must be only one");
@@ -437,6 +524,8 @@ exports.placeDownLine = async (req, res, next) => {
     //   "isHeadPositionIsSameBinaryLine"
     // );
 
+    // throw new CustomError(999, "526 error down here");
+
     if (isHeadPositionIsSameBinaryLine.length === 0) {
       throw new CustomError(
         400,
@@ -448,7 +537,7 @@ exports.placeDownLine = async (req, res, next) => {
      * Validate: if Place Id is not the same as This User Id
      * `headUser must be already place first`
      */
-
+    let placeAtHeadUserId_isEqual_thisUserId = false;
     if (placeAtHeadUserId !== id) {
       Promise.all(
         findAll_userDownLine_notPlace.map(async (item) => {
@@ -456,13 +545,16 @@ exports.placeDownLine = async (req, res, next) => {
           // console.log(item.id);
           // console.log(placeId);
 
-          if (item.id === +placeAtHeadUserId) {
-            throw new CustomError(
-              400,
-              "This head user is not yet place in Binary line"
-            );
+          if (+item.id == +placeAtHeadUserId) {
+            placeAtHeadUserId_isEqual_thisUserId = true;
           }
         })
+      );
+    }
+    if (placeAtHeadUserId_isEqual_thisUserId) {
+      throw new CustomError(
+        400,
+        "This head user is not yet place in Binary line"
       );
     }
 
@@ -487,6 +579,8 @@ exports.placeDownLine = async (req, res, next) => {
     //   findDetail_placeAtHeadUserId.length,
     //   "findDetail_placeAtHeadUserId"
     // );
+
+    throw new CustomError(999, "TEST");
 
     const updateResult = await User.update(
       { headIsUserId: placeAtHeadUserId, placePosition: placePosition },
@@ -515,6 +609,6 @@ exports.placeDownLine = async (req, res, next) => {
     await transaction.rollback();
 
     console.log(err);
-    next(error);
+    next(err);
   }
 };
