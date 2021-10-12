@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      thisUserRef: {
+      refCode: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -18,19 +18,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      /**
-       * Binary tree Position(Where get Place)
-       */
-      placePosition: {
-        type: DataTypes.ENUM("L", "R"),
-        allowNull: true,
-        defaultValue: null,
-      },
-      headIsUserId: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        defaultValue: null,
-      },
     },
     {
       underscored: true,
@@ -39,26 +26,38 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   User.associate = (models) => {
-    User.hasMany(models.UserPlace, {
+    User.hasOne(models.PackageDuration, {
       foreignKey: {
-        name: "userIdWhoCanEdit",
+        name: "userId",
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
     });
 
-    User.hasOne(models.UserPlace, {
+    User.hasMany(models.PackageHistory, {
       foreignKey: {
-        name: "userIdWhoGotEdit",
+        name: "userId",
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
     });
 
-    /**
-     * check อีกรอบด้วย
-     */
-    User.hasMany(models.OrderHistory_PackageBuy, {
+    User.hasMany(models.InvitedHistory, {
+      foreignKey: {
+        name: "userInviteSend",
+      },
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
+    });
+    User.hasOne(models.InvitedHistory, {
+      foreignKey: {
+        name: "userInvited",
+      },
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
+    });
+
+    User.hasOne(models.BinaryTree, {
       foreignKey: {
         name: "userId",
       },

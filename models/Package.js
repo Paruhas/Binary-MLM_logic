@@ -26,11 +26,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  /**
-   * check อีกรอบด้วย
-   */
   Package.associate = (models) => {
-    Package.hasOne(models.OrderHistory_PackageBuy, {
+    Package.hasOne(models.PackageHistory, {
       foreignKey: {
         name: "packageId",
       },
