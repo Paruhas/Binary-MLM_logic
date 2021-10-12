@@ -1,11 +1,11 @@
-const { sequelize, Package, OrderHistory_PackageBuy } = require("../models");
+const { sequelize, Package, PackageHistory } = require("../models");
 const CustomError = require("../utils/CustomError");
 
 exports.getAllOrderHistoryByUserId = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
-    const allOrderHistoryData = await OrderHistory_PackageBuy.findAll({
+    const allOrderHistoryData = await PackageHistory.findAll({
       where: { userId: userId },
     });
 
@@ -34,7 +34,7 @@ exports.createOrder = async (req, res, next) => {
       throw new CustomError(400, "package not found");
     }
 
-    const createOrder = await OrderHistory_PackageBuy.create(
+    const createOrder = await PackageHistory.create(
       {
         packageId: findPackageById.id,
         packageName: findPackageById.name,
