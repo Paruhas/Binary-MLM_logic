@@ -135,80 +135,7 @@ exports.getUserById = async (req, res, next) => {
       throw new CustomError(400, "User not found");
     }
 
-    /**
-     * userDownLine show
-     */
-
-    // const test = await InvitedHistory.findAll({
-    //   where: { userInviteSend: [userId] },
-    // });
-    // const test_arr = [];
-
-    // Promise.all(
-    //   test.map((item) => {
-    //     // console.log(item.userInvited);
-    //     test_arr.push(item.userInvited);
-    //     return item;
-    //   })
-    // );
-    // console.log(test_arr);
-
-    // const test2 = await InvitedHistory.findAll({
-    //   where: { userInviteSend: test_arr },
-    // });
-    // const test2_arr = [];
-
-    // Promise.all(
-    //   test2.map((item) => {
-    //     // console.log(item.userInvited);
-    //     test2_arr.push(item.userInvited);
-    //     return item;
-    //   })
-    // );
-    // console.log(test2_arr);
-
-    // const test3 = await InvitedHistory.findAll({
-    //   where: { userInviteSend: test2_arr },
-    // });
-    // const test3_arr = [];
-
-    // Promise.all(
-    //   test3.map((item) => {
-    //     // console.log(item.userInvited);
-    //     test3_arr.push(item.userInvited);
-    //     return item;
-    //   })
-    // );
-    // console.log(test3_arr);
-
-    // const test4 = await InvitedHistory.findAll({
-    //   where: { userInviteSend: test3_arr },
-    // });
-    // const test4_arr = [];
-
-    // Promise.all(
-    //   test4.map((item) => {
-    //     // console.log(item.userInvited);
-    //     test4_arr.push(item.userInvited);
-    //     return item;
-    //   })
-    // );
-    // console.log(test4_arr);
-
-    // const test5 = await InvitedHistory.findAll({
-    //   where: { userInviteSend: test4_arr },
-    // });
-    // const test5_arr = [];
-
-    // Promise.all(
-    //   test5.map((item) => {
-    //     // console.log(item.userInvited);
-    //     test5_arr.push(item.userInvited);
-    //     return item;
-    //   })
-    // );
-    // console.log(test5_arr);
-
+    /* ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) ----- */
     const allChild = [];
 
     async function getAllChild(params) {
@@ -238,9 +165,10 @@ exports.getUserById = async (req, res, next) => {
 
     await getAllChild([userId]);
 
-    const allParent = [];
+    /* ----- Get all parents (UserId that send invite to this User AND top User that send invited to send invite User (and more) ) ----- */
+    const allParents = [];
 
-    async function getAllParent(params) {
+    async function getAllParents(params) {
       const Fn_arr = [];
 
       const resultFromDB = await InvitedHistory.findAll({
@@ -248,26 +176,44 @@ exports.getUserById = async (req, res, next) => {
       });
 
       if (resultFromDB.length == 0) {
-        allParent.sort((a, b) => a - b);
+        allParents.sort((a, b) => a - b);
         return;
       }
 
       for (let i = 0; i < resultFromDB.length; i++) {
         let child = resultFromDB[i];
 
-        if (!allParent.includes(child.userInviteSend)) {
-          await allParent.push(child.userInviteSend);
+        if (!allParents.includes(child.userInviteSend)) {
+          await allParents.push(child.userInviteSend);
         }
 
         await Fn_arr.push(child.userInviteSend);
 
-        await getAllParent(Fn_arr);
+        await getAllParents(Fn_arr);
       }
     }
 
-    await getAllParent([userId]);
+    await getAllParents([userId]);
 
-    res.status(200).json({ userData, allChild, allParent });
+    let allDownLineUserData = [];
+    if (allChild.length !== 0) {
+      allDownLineUserData = await User.findAll({
+        where: { id: allChild },
+      });
+    }
+
+    let allUpLineUserData = [];
+    if (allParents.length !== 0) {
+      allUpLineUserData = await User.findAll({
+        where: { id: allParents },
+      });
+    }
+
+    res.status(200).json({
+      userData,
+      allDownLineUserData,
+      allUpLineUserData,
+    });
   } catch (error) {
     console.log(error);
 
