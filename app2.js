@@ -30,12 +30,12 @@ const UserPlace = [
 const findUser = User.filter((item) => {
   return item.id === 1;
 });
-console.log(findUser);
+console.log(findUser, "findUser");
 
 const findUserPlace = UserPlace.filter((item) => {
-  return findUser.id == item.userIdWhoCanEdit;
+  return findUser[0].id == item.userIdWhoCanEdit;
 }, {});
-console.log(findUserPlace);
+console.log(findUserPlace, "findUserPlace");
 
 // ----- -----
 
@@ -71,4 +71,36 @@ validateTests.map((item) => {
   }
 });
 
-console.log(validateCount);
+console.log(validateCount, "validateCount");
+
+// ----- -----
+
+const getChildren = (id) =>
+    (relations[id] || []).flatMap((o) => [o, ...getChildren(o.id)]),
+  data = [
+    { id: 1, parentId: 0 },
+    { id: 2, parentId: 1 },
+    { id: 3, parentId: 1 },
+    { id: 4, parentId: 2 },
+    { id: 5, parentId: 4 },
+    { id: 6, parentId: 3 },
+    { id: 7, parentId: 6 },
+    { id: 8, parentId: 7 },
+  ],
+  relations = data.reduce((r, o) => {
+    // console.log(o);
+    (r[o.parentId] = []).push(o);
+    return r;
+  }, {});
+
+// console.log(getChildren(2)); // 4 5
+// console.log(getChildren(3)); // 6 7 8
+
+function fun1(a) {
+  function fun2(b) {
+    return a + b;
+  }
+  return fun2;
+}
+
+console.log(fun1(1)(2));
