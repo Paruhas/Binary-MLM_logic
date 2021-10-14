@@ -210,7 +210,7 @@ exports.getUserById = async (req, res, next) => {
     await getAllParents([userId]);
 
     const userInvitedHistoryData = await InvitedHistory.findAll({
-      where: { id: userId },
+      where: { userInviteSend: userId },
     });
 
     let allDownLineUserData = [];
@@ -248,30 +248,50 @@ exports.placeUser = async (req, res, next) => {
     if (userId === placeId) {
       throw new CustomError(400, "You cannot place yourself");
     }
+    if (parentId === placeId) {
+      throw new CustomError(400, "Parent and place must not equal");
+    }
 
-    const validateUserId = await User.findByPk(userId);
-    if (!validateUserId) {
+    const validatePosition = ["L", "R"];
+    let validatePosition_count = 0;
+    Promise.all(
+      validatePosition.map(async (item) => {
+        if (position !== item) {
+          validatePosition_count += 1;
+        }
+      })
+    );
+    if (validatePosition_count === 2) {
+      throw new CustomError(400, "This position value is incorrect");
+    }
+
+    const validateUserId_hasData = await User.findByPk(userId);
+    if (!validateUserId_hasData) {
       throw new CustomError(400, "This user id not found");
     }
 
-    const validateParentId = await User.findByPk(parentId);
-    if (!validateParentId) {
-      throw new CustomError(400, "This user id for parent id not found");
+    const validateParentId_hasData = await User.findByPk(parentId);
+    if (!validateParentId_hasData) {
+      throw new CustomError(400, "This parent id not found");
     }
 
-    /**
-     * can be validate with allChild?
-     const validatePlaceId = await User.findByPk(placeId);
-     if (!validatePlaceId) {
-       throw new CustomError(400, "This user for place id id not found");
-      }
-      
-      const findBinaryTreeData = await BinaryTree.findAll({
-        where: { parentId: parentId },
-      });
-    */
+    const validatePlaceId_hasData = await User.findByPk(placeId);
+    if (!validatePlaceId_hasData) {
+      throw new CustomError(400, "This place id not found");
+    }
+
+    const validatePlaceId_hasPlaced = await BinaryTree.findOne({
+      where: { userId: placeId },
+    });
+    if (validatePlaceId_hasPlaced) {
+      throw new CustomError(400, "This place id has already placed");
+    }
 
     /* ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) ----- */
+    /**
+     * Get All Child of UserId
+     *  => Validate that UserId have permission to place this placeId
+     */
     const allChild = [];
 
     async function getAllChild(params) {
@@ -301,18 +321,174 @@ exports.placeUser = async (req, res, next) => {
 
     await getAllChild([userId]);
 
-    res.status(200).json({
-      message: "TEST",
-      userId,
-      parentId,
-      placeId,
-      position,
-      // findBinaryTreeData,
-      allChild,
-      validateUserId,
-      validateParentId,
-      // validatePlaceId,
+    let placeIdIsDownLine = false;
+    Promise.all(
+      allChild.map((item) => {
+        if (item === +placeId) {
+          placeIdIsDownLine = true;
+        }
+      })
+    );
+    if (!placeIdIsDownLine) {
+      throw new CustomError(
+        400,
+        "You cannot place this user; placeId not invited by UserId or UserId's downLine"
+      );
+    }
+
+    /* ----- Get all parents (UserId that send invite to this User AND top User that send invited to send invite User (and more) ) ----- */
+    /**
+     * Get All Parents of UserId
+     *  - got result `allParents (id)` from getAllParents FN
+     *  - use `allParents (id)` find `KodGrandParent` (Head of Binary tree of this userId) from DB
+     *  - then use `KodGrandParent` ID find All Child (All member in Binary tree)
+     *    => Validate that ParentId in the same binaryTree
+     */
+    const allParents = [];
+
+    async function getAllParents(params) {
+      const Fn_arr = [];
+
+      const resultFromDB = await InvitedHistory.findAll({
+        where: { user_invited: params },
+      });
+
+      if (resultFromDB.length == 0) {
+        allParents.sort((a, b) => a - b);
+        return;
+      }
+
+      for (let i = 0; i < resultFromDB.length; i++) {
+        let child = resultFromDB[i];
+
+        if (!allParents.includes(child.userInviteSend)) {
+          await allParents.push(child.userInviteSend);
+        }
+
+        await Fn_arr.push(child.userInviteSend);
+
+        await getAllParents(Fn_arr);
+      }
+    }
+
+    await getAllParents([userId]);
+
+    let findKodGrandParent = null;
+    if (allParents.length !== 0) {
+      findKodGrandParent = await User.findAll({
+        where: { [Op.and]: [{ id: allParents }, { ref_from: null }] },
+      });
+    }
+    if (findKodGrandParent.length !== 1) {
+      throw new CustomError(500, "Internal server error");
+    }
+
+    /* ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) ----- */
+    const allKodGrandParentChild = [];
+
+    async function getAllKodGrandParentChild(params) {
+      const Fn_arr = [];
+
+      const resultFromDB = await InvitedHistory.findAll({
+        where: { user_invite_send: params },
+      });
+
+      if (resultFromDB.length == 0) {
+        allKodGrandParentChild.sort((a, b) => a - b);
+        return;
+      }
+
+      for (let i = 0; i < resultFromDB.length; i++) {
+        let child = resultFromDB[i];
+
+        if (!allKodGrandParentChild.includes(child.userInvited)) {
+          await allKodGrandParentChild.push(child.userInvited);
+
+          await Fn_arr.push(child.userInvited);
+
+          await getAllKodGrandParentChild(Fn_arr);
+        }
+      }
+    }
+
+    await getAllKodGrandParentChild([findKodGrandParent[0].id]);
+
+    let placeIdIsDownLine_KodGrandParent = false;
+    Promise.all(
+      allKodGrandParentChild.map((item) => {
+        if (item === +parentId) {
+          placeIdIsDownLine_KodGrandParent = true;
+        }
+      })
+    );
+    if (!placeIdIsDownLine_KodGrandParent) {
+      throw new CustomError(400, "This parent is not in your Binary Tree");
+    }
+
+    /**
+     * CASE: ParentId is same as UserId <can place L and R>
+     */
+    if (userId === parentId) {
+      const validateBinaryTree_parentIsLocation_same = await BinaryTree.findAll(
+        {
+          where: { parentId: parentId },
+        }
+      );
+
+      if (validateBinaryTree_parentIsLocation_same.length >= 2) {
+        throw new CustomError(400, "This parent's both leg are full");
+      }
+
+      if (validateBinaryTree_parentIsLocation_same.length === 1) {
+        if (validateBinaryTree_parentIsLocation_same[0].position === position) {
+          throw new CustomError(400, "This parent's leg now reserve");
+        }
+      }
+
+      const createBinaryTree = await BinaryTree.create({
+        parentId: parentId,
+        position: position,
+        placeByUserId: userId,
+        userId: placeId,
+      });
+      return res.status(400).json({ createBinaryTree });
+    }
+
+    /**
+     * CASE: ParentId is not same as UserId
+     * <can place L or R determine by parentId is line>
+     */
+
+    const validateBinaryTree_parentIsLocation_way = await BinaryTree.findOne({
+      where: { userId: parentId },
     });
+
+    if (position !== validateBinaryTree_parentIsLocation_way.position) {
+      throw new CustomError(
+        400,
+        "You cannot place this position; incorrect position line way"
+      );
+    }
+
+    const validateBinaryTree_thisPositionAlreadyPlace =
+      await BinaryTree.findOne({
+        where: { [Op.and]: [{ parentId: parentId }, { position: position }] },
+      });
+
+    if (validateBinaryTree_thisPositionAlreadyPlace) {
+      throw new CustomError(
+        400,
+        "You cannot place this position; This location has already placed"
+      );
+    }
+
+    const createBinaryTree = await BinaryTree.create({
+      parentId: parentId,
+      position: position,
+      placeByUserId: userId,
+      userId: placeId,
+    });
+    return res.status(200).json({ createBinaryTree });
   } catch (error) {
     console.log(error);
 
