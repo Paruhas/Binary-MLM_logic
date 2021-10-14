@@ -42,7 +42,16 @@ app.use("/", (req, res, next) => {
   res.status(404).json({ message: "Path not found" });
 });
 
-// const { sequelize } = require("./models");
-// sequelize.sync({ force: true }).then(() => console.log("DB sync"));
+const { sequelize } = require("./models");
+sequelize.sync({ force: true }).then(() => console.log("DB sync"));
 
 app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
+
+/* ----- REDIS ----- */
+
+// const redis = require("redis");
+// const client = redis.createClient();
+
+// client.on("connect", function () {
+//   console.log("redis Connected!");
+// });

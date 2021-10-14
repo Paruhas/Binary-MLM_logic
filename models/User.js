@@ -57,9 +57,10 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "RESTRICT",
     });
 
-    User.hasOne(models.BinaryTree, {
+    User.hasMany(models.BinaryTree, {
       foreignKey: {
         name: "userId",
+        // allowNull: true,
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",

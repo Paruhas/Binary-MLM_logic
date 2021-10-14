@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       parentId: {
         type: DataTypes.STRING,
+        // allowNull: false,
         allowNull: true,
         defaultValue: null,
       },
@@ -11,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("L", "R"),
         allowNull: true,
         defaultValue: null,
+      },
+      placeByUserId: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
     },
     {
@@ -23,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     BinaryTree.belongsTo(models.User, {
       foreignKey: {
         name: "userId",
+        // allowNull: true,
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",

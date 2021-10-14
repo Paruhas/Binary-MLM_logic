@@ -53,9 +53,23 @@ exports.register = async (req, res, next) => {
         { transaction: transaction }
       );
 
+      const createBinaryTree = await BinaryTree.create(
+        {
+          parentId: null,
+          position: null,
+          userId: createNewUser.id,
+          placeByUserId: "ADMIN",
+        },
+        {
+          transaction: transaction,
+        }
+      );
+
       await transaction.commit();
 
-      return res.status(201).json({ createNewUser, createPackageDuration });
+      return res
+        .status(201)
+        .json({ createNewUser, createPackageDuration, createBinaryTree });
     }
 
     /* ----- New user WITH ref code ----- */
@@ -195,6 +209,10 @@ exports.getUserById = async (req, res, next) => {
 
     await getAllParents([userId]);
 
+    const userInvitedHistoryData = await InvitedHistory.findAll({
+      where: { id: userId },
+    });
+
     let allDownLineUserData = [];
     if (allChild.length !== 0) {
       allDownLineUserData = await User.findAll({
@@ -211,8 +229,89 @@ exports.getUserById = async (req, res, next) => {
 
     res.status(200).json({
       userData,
+      userInvitedHistoryData,
       allDownLineUserData,
       allUpLineUserData,
+    });
+  } catch (error) {
+    console.log(error);
+
+    next(error);
+  }
+};
+
+exports.placeUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { parentId, placeId, position } = req.body;
+
+    if (userId === placeId) {
+      throw new CustomError(400, "You cannot place yourself");
+    }
+
+    const validateUserId = await User.findByPk(userId);
+    if (!validateUserId) {
+      throw new CustomError(400, "This user id not found");
+    }
+
+    const validateParentId = await User.findByPk(parentId);
+    if (!validateParentId) {
+      throw new CustomError(400, "This user id for parent id not found");
+    }
+
+    /**
+     * can be validate with allChild?
+     const validatePlaceId = await User.findByPk(placeId);
+     if (!validatePlaceId) {
+       throw new CustomError(400, "This user for place id id not found");
+      }
+      
+      const findBinaryTreeData = await BinaryTree.findAll({
+        where: { parentId: parentId },
+      });
+    */
+
+    /* ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) ----- */
+    const allChild = [];
+
+    async function getAllChild(params) {
+      const Fn_arr = [];
+
+      const resultFromDB = await InvitedHistory.findAll({
+        where: { user_invite_send: params },
+      });
+
+      if (resultFromDB.length == 0) {
+        allChild.sort((a, b) => a - b);
+        return;
+      }
+
+      for (let i = 0; i < resultFromDB.length; i++) {
+        let child = resultFromDB[i];
+
+        if (!allChild.includes(child.userInvited)) {
+          await allChild.push(child.userInvited);
+
+          await Fn_arr.push(child.userInvited);
+
+          await getAllChild(Fn_arr);
+        }
+      }
+    }
+
+    await getAllChild([userId]);
+
+    res.status(200).json({
+      message: "TEST",
+      userId,
+      parentId,
+      placeId,
+      position,
+      // findBinaryTreeData,
+      allChild,
+      validateUserId,
+      validateParentId,
+      // validatePlaceId,
     });
   } catch (error) {
     console.log(error);
