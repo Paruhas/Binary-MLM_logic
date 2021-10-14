@@ -241,6 +241,7 @@ exports.getUserById = async (req, res, next) => {
 };
 
 exports.placeUser = async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
     const { userId } = req.params;
     const { parentId, placeId, position } = req.body;
@@ -482,15 +483,23 @@ exports.placeUser = async (req, res, next) => {
       );
     }
 
-    const createBinaryTree = await BinaryTree.create({
-      parentId: parentId,
-      position: position,
-      placeByUserId: userId,
-      userId: placeId,
-    });
+    const createBinaryTree = await BinaryTree.create(
+      {
+        parentId: parentId,
+        position: position,
+        placeByUserId: userId,
+        userId: placeId,
+      },
+      { transaction: transaction }
+    );
+
+    await transaction.commit();
+
     return res.status(200).json({ createBinaryTree });
   } catch (error) {
     console.log(error);
+
+    await transaction.rollback();
 
     next(error);
   }

@@ -32,6 +32,7 @@ exports.createPackage = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { name, price, duration } = req.body;
+    let { description } = req.body;
 
     if (!name || !name.trim()) {
       throw new CustomError(400, "name is require");
@@ -46,14 +47,14 @@ exports.createPackage = async (req, res, next) => {
       throw new CustomError(400, "duration is require");
     }
 
-    if (!req.body.description || !req.body.description.trim()) {
-      req.body.description = null;
+    if (!description || !description.trim()) {
+      description = null;
     }
 
     const createPackage = await Package.create(
       {
         name: name,
-        description: req.body.description,
+        description: description,
         price: price,
         duration: duration,
       },
