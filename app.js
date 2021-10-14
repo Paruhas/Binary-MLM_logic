@@ -6,7 +6,7 @@ const app = express();
 
 const userRouter = require("./routes/userRouter");
 const packageRouter = require("./routes/packageRouter");
-const packageHistoryRouter = require("./routes/packageHistoryRouter");
+const packageOrderRouter = require("./routes/packageOrderRouter");
 
 app.use(cors());
 app.use(compression());
@@ -21,7 +21,7 @@ app.use("/home", (req, res, next) => {
 
 app.use("/user", userRouter);
 app.use("/package", packageRouter);
-app.use("/package-history", packageHistoryRouter);
+app.use("/package-order", packageOrderRouter);
 
 // Handler Error
 app.use((err, req, res, next) => {

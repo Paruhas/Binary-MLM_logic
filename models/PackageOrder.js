@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-  const PackageHistory = sequelize.define(
-    "PackageHistory",
+  const PackageOrder = sequelize.define(
+    "PackageOrder",
     {
       packageName: {
         type: DataTypes.STRING,
@@ -26,8 +26,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  PackageHistory.associate = (models) => {
-    PackageHistory.belongsTo(models.Package, {
+  PackageOrder.associate = (models) => {
+    PackageOrder.belongsTo(models.Package, {
       foreignKey: {
         name: "packageId",
       },
@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "RESTRICT",
     });
 
-    PackageHistory.belongsTo(models.User, {
+    PackageOrder.belongsTo(models.User, {
       foreignKey: {
         name: "userId",
       },
@@ -44,5 +44,5 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
-  return PackageHistory;
+  return PackageOrder;
 };

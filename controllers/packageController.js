@@ -18,7 +18,7 @@ exports.getPackageById = async (req, res, next) => {
     const packageData = await Package.findOne({ where: { id: id } });
 
     if (!packageData) {
-      return res.status(400).json({ message: "package not found" });
+      return res.status(400).json({ message: "Package not found" });
     }
 
     res.status(200).json({ packageData });
@@ -35,16 +35,16 @@ exports.createPackage = async (req, res, next) => {
     let { description } = req.body;
 
     if (!name || !name.trim()) {
-      throw new CustomError(400, "name is require");
+      throw new CustomError(400, "Name is require");
     }
     if (!price || !price.trim()) {
-      throw new CustomError(400, "price is require");
+      throw new CustomError(400, "Price is require");
     }
     if (!+price > 0) {
-      throw new CustomError(400, "price must be int and not minus");
+      throw new CustomError(400, "Price must be int and not minus");
     }
     if (!duration || !duration.trim()) {
-      throw new CustomError(400, "duration is require");
+      throw new CustomError(400, "Duration is require");
     }
 
     if (!description || !description.trim()) {
@@ -67,11 +67,12 @@ exports.createPackage = async (req, res, next) => {
 
     res
       .status(201)
-      .json({ message: "create new package successful", createPackage });
+      .json({ message: "Create new package successful", createPackage });
   } catch (error) {
     await transaction.rollback();
 
     console.log(error);
+
     next(error);
   }
 };
@@ -86,32 +87,32 @@ exports.updatePackage = async (req, res, next) => {
       (!name.trim() && !description.trim() && !price.trim() && !duration.trim())
     ) {
       return res.status(400).json({
-        message: "ERROR cannot enter update process, all value are empty",
+        message: "All value are empty, nothing to update",
       });
     }
 
-    const findPackageOldData = await Package.findOne({ where: { id: id } });
+    const oldPackageData = await Package.findOne({ where: { id: id } });
 
-    if (!findPackageOldData) {
-      return res.status(400).json({ message: "package not found" });
+    if (!oldPackageData) {
+      return res.status(400).json({ message: "Package not found" });
     }
 
     if (!name || !name.trim()) {
-      name = findPackageOldData.name;
+      name = oldPackageData.name;
     }
     if (!description || !description.trim()) {
-      description = findPackageOldData.description;
+      description = oldPackageData.description;
     }
     if (!price || !price.trim()) {
-      price = findPackageOldData.price;
+      price = oldPackageData.price;
     }
     if (!+price > 0) {
       return res
         .status(400)
-        .json({ message: "price must be int and not minus" });
+        .json({ message: "Price must be int and not minus" });
     }
     if (!duration || !duration.trim()) {
-      duration = findPackageOldData.duration;
+      duration = oldPackageData.duration;
     }
 
     const updatePackage = await Package.update(
@@ -127,14 +128,14 @@ exports.updatePackage = async (req, res, next) => {
     );
 
     if (!updatePackage) {
-      return res.status(400).json({ message: "update database error" });
+      return res.status(500).json({ message: "Internal server error" });
     }
 
-    const findPackageNewData = await Package.findOne({ where: { id: id } });
+    const updatedPackage = await Package.findOne({ where: { id: id } });
 
-    res.status(201).json({
-      message: "update package database successful",
-      findPackageNewData,
+    res.status(200).json({
+      message: "Update package successful",
+      updatedPackage,
     });
   } catch (error) {
     console.log(error);

@@ -116,11 +116,11 @@ exports.register = async (req, res, next) => {
         .json({ createNewUser, createPackageDuration, createInvitedHistories });
     }
 
-    throw new CustomError(400, "Some error has occurred");
+    throw new CustomError(500, "Internal server error");
   } catch (error) {
-    console.log(error);
-
     await transaction.rollback();
+
+    console.log(error);
 
     next(error);
   }
@@ -374,56 +374,59 @@ exports.placeUser = async (req, res, next) => {
 
     await getAllParents([userId]);
 
-    let findKodGrandParent = null;
+    /* If this UserId is KodGrandParent himself => Kick out of FN */
     if (allParents.length !== 0) {
-      findKodGrandParent = await User.findAll({
-        where: { [Op.and]: [{ id: allParents }, { ref_from: null }] },
-      });
-    }
-    if (findKodGrandParent.length !== 1) {
-      throw new CustomError(500, "Internal server error");
-    }
-
-    /* ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) ----- */
-    const allKodGrandParentChild = [];
-
-    async function getAllKodGrandParentChild(params) {
-      const Fn_arr = [];
-
-      const resultFromDB = await InvitedHistory.findAll({
-        where: { user_invite_send: params },
-      });
-
-      if (resultFromDB.length == 0) {
-        allKodGrandParentChild.sort((a, b) => a - b);
-        return;
+      let findKodGrandParent = null;
+      if (allParents.length !== 0) {
+        findKodGrandParent = await User.findAll({
+          where: { [Op.and]: [{ id: allParents }, { ref_from: null }] },
+        });
+      }
+      if (findKodGrandParent.length !== 1) {
+        throw new CustomError(500, "Internal server error");
       }
 
-      for (let i = 0; i < resultFromDB.length; i++) {
-        let child = resultFromDB[i];
+      /* ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) ----- */
+      const allKodGrandParentChild = [];
 
-        if (!allKodGrandParentChild.includes(child.userInvited)) {
-          await allKodGrandParentChild.push(child.userInvited);
+      async function getAllKodGrandParentChild(params) {
+        const Fn_arr = [];
 
-          await Fn_arr.push(child.userInvited);
+        const resultFromDB = await InvitedHistory.findAll({
+          where: { user_invite_send: params },
+        });
 
-          await getAllKodGrandParentChild(Fn_arr);
+        if (resultFromDB.length == 0) {
+          allKodGrandParentChild.sort((a, b) => a - b);
+          return;
+        }
+
+        for (let i = 0; i < resultFromDB.length; i++) {
+          let child = resultFromDB[i];
+
+          if (!allKodGrandParentChild.includes(child.userInvited)) {
+            await allKodGrandParentChild.push(child.userInvited);
+
+            await Fn_arr.push(child.userInvited);
+
+            await getAllKodGrandParentChild(Fn_arr);
+          }
         }
       }
-    }
 
-    await getAllKodGrandParentChild([findKodGrandParent[0].id]);
+      await getAllKodGrandParentChild([findKodGrandParent[0].id]);
 
-    let placeIdIsDownLine_KodGrandParent = false;
-    Promise.all(
-      allKodGrandParentChild.map((item) => {
-        if (item === +parentId) {
-          placeIdIsDownLine_KodGrandParent = true;
-        }
-      })
-    );
-    if (!placeIdIsDownLine_KodGrandParent) {
-      throw new CustomError(400, "This parent is not in your Binary Tree");
+      let placeIdIsDownLine_KodGrandParent = false;
+      Promise.all(
+        allKodGrandParentChild.map((item) => {
+          if (item === +parentId) {
+            placeIdIsDownLine_KodGrandParent = true;
+          }
+        })
+      );
+      if (!placeIdIsDownLine_KodGrandParent) {
+        throw new CustomError(400, "This parent is not in your Binary Tree");
+      }
     }
 
     /**
@@ -495,11 +498,11 @@ exports.placeUser = async (req, res, next) => {
 
     await transaction.commit();
 
-    return res.status(200).json({ createBinaryTree });
+    return res.status(201).json({ createBinaryTree });
   } catch (error) {
-    console.log(error);
-
     await transaction.rollback();
+
+    console.log(error);
 
     next(error);
   }

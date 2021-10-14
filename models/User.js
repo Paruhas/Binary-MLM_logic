@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "RESTRICT",
     });
 
-    User.hasMany(models.PackageHistory, {
+    User.hasMany(models.PackageOrder, {
       foreignKey: {
         name: "userId",
       },
