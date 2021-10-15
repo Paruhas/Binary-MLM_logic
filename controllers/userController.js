@@ -3,7 +3,6 @@ const {
   User,
   PackageDuration,
   InvitedHistory,
-  PackageHistory,
   BinaryTree,
   sequelize,
 } = require("../models");
@@ -255,13 +254,11 @@ exports.placeUser = async (req, res, next) => {
 
     const validatePosition = ["L", "R"];
     let validatePosition_count = 0;
-    Promise.all(
-      validatePosition.map(async (item) => {
-        if (position !== item) {
-          validatePosition_count += 1;
-        }
-      })
-    );
+    for (let i = 0; i < validatePosition.length; i++) {
+      if (validatePosition[i] !== position) {
+        validatePosition_count += 1;
+      }
+    }
     if (validatePosition_count === 2) {
       throw new CustomError(400, "This position value is incorrect");
     }
@@ -276,13 +273,32 @@ exports.placeUser = async (req, res, next) => {
       throw new CustomError(400, "This parent id not found");
     }
 
+    const validateParentId_hasPlaced = await BinaryTree.findOne({
+      where: { userId: parentId },
+    });
+    if (!validateParentId_hasPlaced) {
+      throw new CustomError(400, "This parent id has not place yet");
+    }
+    if (
+      validateParentId_hasPlaced.parentId === null &&
+      validateParentId_hasPlaced.position === null &&
+      parentId !== userId
+    ) {
+      throw new CustomError(
+        400,
+        "This parent id might not in your Binary Line"
+      );
+    }
+
     const validatePlaceId_hasData = await User.findByPk(placeId);
     if (!validatePlaceId_hasData) {
       throw new CustomError(400, "This place id not found");
     }
 
     const validatePlaceId_hasPlaced = await BinaryTree.findOne({
-      where: { userId: placeId },
+      where: {
+        [Op.and]: [{ userId: placeId }, { position: { [Op.ne]: null } }],
+      },
     });
     if (validatePlaceId_hasPlaced) {
       throw new CustomError(400, "This place id has already placed");
@@ -383,7 +399,10 @@ exports.placeUser = async (req, res, next) => {
         });
       }
       if (findKodGrandParent.length !== 1) {
-        throw new CustomError(500, "Internal server error");
+        throw new CustomError(
+          500,
+          "Internal server error; found more than one KodGrandParent"
+        );
       }
 
       /* ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) ----- */
@@ -429,8 +448,21 @@ exports.placeUser = async (req, res, next) => {
       }
     }
 
+    const validateBinaryTree_thisPositionAlreadyPlace =
+      await BinaryTree.findOne({
+        where: { [Op.and]: [{ parentId: parentId }, { position: position }] },
+      });
+
+    if (validateBinaryTree_thisPositionAlreadyPlace) {
+      throw new CustomError(
+        400,
+        "You cannot place this position; This location has already placed"
+      );
+    }
+
     /**
-     * CASE: ParentId is same as UserId <can place L and R>
+     * CASE: ParentId is same as UserId
+     * <can place L and R; PLACE ANYWHERE>
      */
     if (userId === parentId) {
       const validateBinaryTree_parentIsLocation_same = await BinaryTree.findAll(
@@ -465,31 +497,83 @@ exports.placeUser = async (req, res, next) => {
     }
 
     /**
-     * CASE: ParentId is not same as UserId
-     * <can place L or R determine by parentId is line>
+     * CASE: ParentId !== userId
+     * BUT ParentId is parent in DB is userId
+     * <can place L and R; PLACE ANYWHERE>
      */
-
-    const validateBinaryTree_parentIsLocation_way = await BinaryTree.findOne({
+    const validateParentId_1LvGrandParent_isUserId = await BinaryTree.findOne({
       where: { userId: parentId },
     });
-
-    if (position !== validateBinaryTree_parentIsLocation_way.position) {
-      throw new CustomError(
-        400,
-        "You cannot place this position; incorrect position line way"
+    if (userId === validateParentId_1LvGrandParent_isUserId.parentId) {
+      const validateBinaryTree_parentIsLocation_same = await BinaryTree.findAll(
+        {
+          where: { parentId: parentId },
+        }
       );
+
+      if (validateBinaryTree_parentIsLocation_same.length >= 2) {
+        throw new CustomError(400, "This parent's both leg are full");
+      }
+
+      if (validateBinaryTree_parentIsLocation_same.length === 1) {
+        if (validateBinaryTree_parentIsLocation_same[0].position === position) {
+          throw new CustomError(400, "This parent's leg now reserve");
+        }
+      }
+
+      const createBinaryTree = await BinaryTree.create(
+        {
+          parentId: parentId,
+          position: position,
+          placeByUserId: userId,
+          userId: placeId,
+        },
+        { transaction: transaction }
+      );
+
+      await transaction.commit();
+
+      return res.status(400).json({ createBinaryTree });
     }
 
-    const validateBinaryTree_thisPositionAlreadyPlace =
-      await BinaryTree.findOne({
-        where: { [Op.and]: [{ parentId: parentId }, { position: position }] },
+    /**
+     * CASE: ParentId !== userId
+     * AND ParentId is parent in DB is not userId
+     * IF Binary line from ParentId to UserId is THE SAME POSITION
+     * <can place position L and R>
+     */
+    const position_fromParentIdToUserId = [];
+
+    async function checkBinaryLine_fromParentIdToUserId(params) {
+      const Fn_arr = [];
+
+      const resultFromDB = await BinaryTree.findAll({
+        where: { user_id: params },
       });
 
-    if (validateBinaryTree_thisPositionAlreadyPlace) {
-      throw new CustomError(
-        400,
-        "You cannot place this position; This location has already placed"
-      );
+      if (resultFromDB[0].userId === +userId) {
+        return;
+      }
+
+      for (let i = 0; i < resultFromDB.length; i++) {
+        let child = resultFromDB[i];
+
+        await position_fromParentIdToUserId.push(child.position);
+
+        await Fn_arr.push(child.parentId);
+
+        await checkBinaryLine_fromParentIdToUserId(Fn_arr);
+      }
+    }
+
+    await checkBinaryLine_fromParentIdToUserId([parentId]);
+
+    const validate_position_fromParentIdToUserId = new Set(
+      position_fromParentIdToUserId
+    );
+
+    if (validate_position_fromParentIdToUserId.size !== 1) {
+      throw new CustomError(400, "Place position at this parentId is invalid");
     }
 
     const createBinaryTree = await BinaryTree.create(
