@@ -449,12 +449,18 @@ exports.placeUser = async (req, res, next) => {
         }
       }
 
-      const createBinaryTree = await BinaryTree.create({
-        parentId: parentId,
-        position: position,
-        placeByUserId: userId,
-        userId: placeId,
-      });
+      const createBinaryTree = await BinaryTree.create(
+        {
+          parentId: parentId,
+          position: position,
+          placeByUserId: userId,
+          userId: placeId,
+        },
+        { transaction: transaction }
+      );
+
+      await transaction.commit();
+
       return res.status(400).json({ createBinaryTree });
     }
 
