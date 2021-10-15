@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     "PackageDuration",
     {
       expireDate: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: true,
       },
       packageStatus: {

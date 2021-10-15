@@ -71,7 +71,7 @@ exports.createPackageOrder = async (req, res, next) => {
       throw new CustomError(400, "User id is require");
     }
 
-    const findUser = await User.findAll({
+    const findUser = await User.findOne({
       where: { id: userId },
     });
 
@@ -87,22 +87,58 @@ exports.createPackageOrder = async (req, res, next) => {
       throw new CustomError(400, "Package not found");
     }
 
-    const findPackageDuration = await PackageDuration.findOne({
+    const findPackageDurationForThisUser = await PackageDuration.findOne({
       where: { userId: userId },
     });
 
-    if (!findPackageDuration) {
-      throw new CustomError(400, "This user is package duration not found");
+    if (!findPackageDurationForThisUser) {
+      throw new CustomError(
+        500,
+        "Internal Server Error;this user is package duration not found"
+      );
     }
 
-    console.log(findPackageDuration);
+    const { packageStatus, expireDate } = findPackageDurationForThisUser;
 
-    console.log(findPackageDuration.expireDate === null);
+    console.log(findPackageDurationForThisUser.expireDate === null);
+    console.log(findPackageDurationForThisUser.updatedAt);
 
-    console.log(dayjs().utc().format());
-    console.log(dayjs(findPackageDuration.createdAt).utc().format());
+    if (false) {
+      const createPackageOrder_Date = new Date();
 
-    return res.status(999).send("This is createPackageOrder");
+      const createPackageOrder = await PackageOrder.create(
+        {
+          packageId: findPackageById.id,
+          packageName: findPackageById.name,
+          packageDescription: findPackageById.description,
+          packagePrice: findPackageById.price,
+          packageDuration: findPackageById.duration,
+          userId: userId,
+        },
+        { transaction: transaction }
+      );
+
+      const updatePackageDuration = await PackageDuration.update(
+        {
+          expireDate: "dayjs().utc().format()",
+          packageStatus: "ACTIVE",
+        },
+        { where: { userId: userId } },
+        { transaction: transaction }
+      );
+    }
+
+    console.log(dayjs("2564-01-01", "DD-MM-YYYY", "th"));
+    console.log(
+      dayjs(findPackageDurationForThisUser.updatedAt, "th").utc().format()
+    );
+
+    return res.status(999).json({
+      message: "test",
+      findUser,
+      findPackageById,
+      findPackageDurationForThisUser,
+    });
 
     const createPackageOrder = await PackageOrder.create(
       {
@@ -116,7 +152,7 @@ exports.createPackageOrder = async (req, res, next) => {
       { transaction: transaction }
     );
 
-    const updatePackageDuration = await PackageOrder.update(
+    const updatePackageDuration = await PackageDuration.update(
       {
         expireDate: "expireDate",
         packageStatus: "ACTIVE",
