@@ -74,7 +74,6 @@ exports.createPackageOrder = async (req, res, next) => {
     const findUser = await User.findOne({
       where: { id: userId },
     });
-
     if (!findUser) {
       throw new CustomError(400, "You are unauthorized (or user id not found)");
     }
@@ -82,7 +81,6 @@ exports.createPackageOrder = async (req, res, next) => {
     const findPackageById = await Package.findOne({
       where: { id: packageId },
     });
-
     if (!findPackageById) {
       throw new CustomError(400, "Package not found");
     }
@@ -90,7 +88,6 @@ exports.createPackageOrder = async (req, res, next) => {
     const findPackageDurationForThisUser = await PackageDuration.findOne({
       where: { userId: userId },
     });
-
     if (!findPackageDurationForThisUser) {
       throw new CustomError(
         500,
@@ -100,11 +97,23 @@ exports.createPackageOrder = async (req, res, next) => {
 
     const { packageStatus, expireDate } = findPackageDurationForThisUser;
 
-    console.log(findPackageDurationForThisUser.expireDate === null);
-    console.log(findPackageDurationForThisUser.updatedAt);
+    /* ----- Calculate New Package Expire Date Function ----- */
+    async function getNewExpireDate(date, duration) {
+      const Cal_newExpireDate = new Date(
+        date.setMonth(date.getMonth() + +duration)
+      );
+      return await Cal_newExpireDate;
+    }
 
-    if (false) {
-      const createPackageOrder_Date = new Date();
+    /**
+     * CASE: UserId packageStatus is "INACTIVE"
+     * <createPackageOrderHistory & updatePackageDuration(ACTIVE, addExpireDate)>
+     */
+    if (findPackageDurationForThisUser.packageStatus === "INACTIVE") {
+      const newExpireDate = await getNewExpireDate(
+        new Date(),
+        findPackageById.duration
+      );
 
       const createPackageOrder = await PackageOrder.create(
         {
@@ -120,52 +129,80 @@ exports.createPackageOrder = async (req, res, next) => {
 
       const updatePackageDuration = await PackageDuration.update(
         {
-          expireDate: "dayjs().utc().format()",
+          expireDate: newExpireDate,
           packageStatus: "ACTIVE",
         },
         { where: { userId: userId } },
         { transaction: transaction }
       );
+
+      if (!updatePackageDuration) {
+        throw new CustomError(400, "No data to update; rollback transaction");
+      }
+
+      const newUserData = await User.findOne({
+        where: { id: userId },
+        include: PackageDuration,
+      });
+
+      await transaction.commit();
+
+      return res.status(200).json({
+        message: "Buy package successful",
+        createPackageOrder,
+        newUserData,
+      });
     }
 
-    console.log(dayjs("2564-01-01", "DD-MM-YYYY", "th"));
-    console.log(
-      dayjs(findPackageDurationForThisUser.updatedAt, "th").utc().format()
-    );
+    /**
+     * CASE: UserId packageStatus is "ACTIVE"
+     * <createPackageOrderHistory & updatePackageDuration(updateExpireDate)>
+     */
+    if (findPackageDurationForThisUser.packageStatus === "ACTIVE") {
+      const newExpireDate = await getNewExpireDate(
+        findPackageDurationForThisUser.expireDate,
+        findPackageById.duration
+      );
 
-    return res.status(999).json({
-      message: "test",
-      findUser,
-      findPackageById,
-      findPackageDurationForThisUser,
-    });
+      const createPackageOrder = await PackageOrder.create(
+        {
+          packageId: findPackageById.id,
+          packageName: findPackageById.name,
+          packageDescription: findPackageById.description,
+          packagePrice: findPackageById.price,
+          packageDuration: findPackageById.duration,
+          userId: userId,
+        },
+        { transaction: transaction }
+      );
 
-    const createPackageOrder = await PackageOrder.create(
-      {
-        packageId: findPackageById.id,
-        packageName: findPackageById.name,
-        packageDescription: findPackageById.description,
-        packagePrice: findPackageById.price,
-        packageDuration: findPackageById.duration,
-        userId: userId,
-      },
-      { transaction: transaction }
-    );
+      const updatePackageDuration = await PackageDuration.update(
+        {
+          expireDate: newExpireDate,
+        },
+        { where: { userId: userId } },
+        { transaction: transaction }
+      );
 
-    const updatePackageDuration = await PackageDuration.update(
-      {
-        expireDate: "expireDate",
-        packageStatus: "ACTIVE",
-      },
-      { where: { userId: userId } },
-      { transaction: transaction }
-    );
+      if (!updatePackageDuration) {
+        throw new CustomError(400, "No data to update; rollback transaction");
+      }
 
-    await transaction.commit();
+      const newUserData = await User.findOne({
+        where: { id: userId },
+        include: PackageDuration,
+      });
 
-    res
-      .status(200)
-      .json({ message: "Create new order successful", createPackageOrder });
+      await transaction.commit();
+
+      return res.status(200).json({
+        message: "Buy package successful",
+        createPackageOrder,
+        newUserData,
+      });
+    }
+
+    throw new CustomError(500, "Internal Server Error");
   } catch (error) {
     await transaction.rollback();
 
