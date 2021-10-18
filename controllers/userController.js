@@ -8,10 +8,13 @@ const {
 } = require("../models");
 const CustomError = require("../utils/CustomError");
 
+const isEmail =
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
 exports.register = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
-    const { username, fromRefCode } = req.body;
+    const { username, fromRefCode, email } = req.body;
     let noRefCode = false;
 
     /* ----- Validate username ----- */
@@ -26,6 +29,20 @@ exports.register = async (req, res, next) => {
       throw new CustomError(400, "This username is already in database");
     }
 
+    // /* ----- Validate email ----- */
+    // if (!email || !email.trim()) {
+    //   throw new CustomError(400, "email is require");
+    // }
+    // if (!isEmail.test(email)) {
+    //   throw new CustomError(400, "this email is invalid format");
+    // }
+    // const thisEmailIsAlreadyInDB = await User.findOne({
+    //   where: { email: email },
+    // });
+    // if (thisEmailIsAlreadyInDB) {
+    //   throw new CustomError(400, "This email is already in database");
+    // }
+
     /* ----- Manage reference code ----- */
     if (!fromRefCode || !fromRefCode.trim()) {
       noRefCode = true;
@@ -36,9 +53,10 @@ exports.register = async (req, res, next) => {
       const createNewUser = await User.create(
         {
           username: username,
-          refCode: Date.now(),
+          refCodeL: Date.now() + "L",
+          refCodeR: Date.now() + "R",
           refFrom: null,
-          refFromId: null,
+          refFromUserId: null,
         },
         { transaction: transaction }
       );
@@ -74,7 +92,9 @@ exports.register = async (req, res, next) => {
     /* ----- New user WITH ref code ----- */
     if (!noRefCode) {
       const findOldUserRefCode = await User.findOne({
-        where: { refCode: fromRefCode },
+        where: {
+          [Op.or]: [{ refCodeL: fromRefCode }, { refCodeR: fromRefCode }],
+        },
       });
 
       if (!findOldUserRefCode) {
@@ -84,9 +104,10 @@ exports.register = async (req, res, next) => {
       const createNewUser = await User.create(
         {
           username: username,
-          refCode: Date.now(),
+          refCodeL: Date.now() + "L",
+          refCodeR: Date.now() + "R",
           refFrom: fromRefCode,
-          refFromId: findOldUserRefCode.id,
+          refFromUserId: findOldUserRefCode.id,
         },
         { transaction: transaction }
       );
@@ -133,9 +154,10 @@ exports.getUserById = async (req, res, next) => {
       attributes: [
         "id",
         "username",
-        "refCode",
+        "refCodeL",
+        "refCodeR",
         "refFrom",
-        "refFromId",
+        "refFromUserId",
         "createdAt",
       ],
       include: {
