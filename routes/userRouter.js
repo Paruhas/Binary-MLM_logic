@@ -6,12 +6,4 @@ userRouter.get("/:userId", userController.getUserById);
 userRouter.post("/register", userController.register);
 userRouter.post("/:userId/place", userController.placeUser);
 
-/**
- * OLD CODE
- */
-// userRouter.get("/", userController.getUserPage);
-// userRouter.get("/:userId", userController.getUserInfo);
-// userRouter.post("/register", userController.register);
-// userRouter.patch("/:id/place", userController.placeDownLine);
-
 module.exports = userRouter;
