@@ -64,8 +64,8 @@ exports.register = async (req, res, next) => {
       const createPackageDuration = await PackageDuration.create(
         {
           userId: createNewUser.id,
-          expire_date: null,
-          package_status: "INACTIVE",
+          expireDate: null,
+          packageStatus: "INACTIVE",
         },
         { transaction: transaction }
       );
