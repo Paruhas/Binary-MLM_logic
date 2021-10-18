@@ -97,7 +97,7 @@ exports.createPackageOrder = async (req, res, next) => {
 
     const { packageStatus, expireDate } = findPackageDurationForThisUser;
 
-    /* ----- Calculate New Package Expire Date Function ----- */
+    /* ----- Function => Calculate New Package Expire Date Function ----- */
     async function getNewExpireDate(date, duration) {
       const Cal_newExpireDate = new Date(
         date.setMonth(date.getMonth() + +duration)
