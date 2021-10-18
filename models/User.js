@@ -6,7 +6,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      refCode: {
+      refCodeL: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      refCodeR: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -14,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      refFromId: {
+      refFromUserId: {
         type: DataTypes.STRING,
         allowNull: true,
       },
