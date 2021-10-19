@@ -2,7 +2,7 @@ const express = require("express");
 const packageOrderRouter = express.Router();
 const PackageOrderController = require("../controllers/PackageOrderController");
 
-packageOrderRouter.get("/", PackageOrderController.getAllOrderOrder);
+packageOrderRouter.get("/", PackageOrderController.getAllPackageOrderHistory);
 packageOrderRouter.get(
   "/:userId?orderId",
   PackageOrderController.getAllOrderOrderByUserId

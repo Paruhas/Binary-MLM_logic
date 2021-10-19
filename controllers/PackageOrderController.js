@@ -8,13 +8,7 @@ const {
 } = require("../models");
 const CustomError = require("../utils/CustomError");
 
-const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-const timezone = require("dayjs/plugin/timezone");
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
-exports.getAllOrderOrder = async (req, res, next) => {
+exports.getAllPackageOrderHistory = async (req, res, next) => {
   return res.status(999).send("This is get all");
   try {
     const allOrderOrderData = await PackageOrder.findAll({});
@@ -147,7 +141,7 @@ exports.createPackageOrder = async (req, res, next) => {
 
       await transaction.commit();
 
-      return res.status(200).json({
+      return res.status(201).json({
         message: "Buy package successful",
         createPackageOrder,
         newUserData,
@@ -195,7 +189,7 @@ exports.createPackageOrder = async (req, res, next) => {
 
       await transaction.commit();
 
-      return res.status(200).json({
+      return res.status(201).json({
         message: "Buy package successful",
         createPackageOrder,
         newUserData,
