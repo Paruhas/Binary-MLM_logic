@@ -9,9 +9,10 @@ const {
 const CustomError = require("../utils/CustomError");
 
 exports.getAllPackageOrderHistory = async (req, res, next) => {
-  return res.status(999).send("This is get all");
   try {
-    const allOrderOrderData = await PackageOrder.findAll({});
+    const allOrderOrderData = await PackageOrder.findAll({
+      include: User,
+    });
 
     res.status(200).json({ allOrderOrderData });
   } catch (error) {
@@ -21,16 +22,15 @@ exports.getAllPackageOrderHistory = async (req, res, next) => {
   }
 };
 
-exports.getAllOrderOrderByUserId = async (req, res, next) => {
-  return res.status(999).send("This is get all by user id");
+exports.getAllPackageOrderByUserId = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
-    const allOrderOrderByUserIdData = await PackageOrder.findAll({
+    const allPackageOrderByUserId = await PackageOrder.findAll({
       where: { userId: userId },
     });
 
-    res.status(200).json({ allOrderOrderByUserIdData });
+    res.status(200).json({ allPackageOrderByUserId });
   } catch (error) {
     console.log(error);
 
@@ -38,16 +38,15 @@ exports.getAllOrderOrderByUserId = async (req, res, next) => {
   }
 };
 
-exports.getOrderOrderByIdByUserId = async (req, res, next) => {
-  return res.status(999).send("This is get order id by user id ");
+exports.getSinglePackageOrderByIdByUserId = async (req, res, next) => {
   try {
     const { userId, packageId } = req.params;
 
-    const allOrderOrderByIdByUserIdData = await PackageOrder.findAll({
-      where: { [Op.or]: [{ id: packageId }, { userId: userId }] },
+    const singlePackageOrderByIdByUserId = await PackageOrder.findAll({
+      where: { [Op.and]: [{ id: packageId }, { userId: userId }] },
     });
 
-    res.status(200).json({ allOrderOrderByIdByUserIdData });
+    res.status(200).json({ singlePackageOrderByIdByUserId });
   } catch (error) {
     console.log(error);
 
