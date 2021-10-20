@@ -7,6 +7,7 @@ const app = express();
 const userRouter = require("./routes/userRouter");
 const packageRouter = require("./routes/packageRouter");
 const packageOrderRouter = require("./routes/packageOrderRouter");
+const binaryTreeRouter = require("./routes/packageOrderRouter");
 
 app.use(cors());
 app.use(compression());
@@ -22,6 +23,7 @@ app.use("/home", (req, res, next) => {
 app.use("/user", userRouter);
 app.use("/package", packageRouter);
 app.use("/package-order", packageOrderRouter);
+app.use("/binary-tree", binaryTreeRouter);
 
 // Handler Error
 app.use((err, req, res, next) => {
