@@ -10,11 +10,11 @@ const CustomError = require("../utils/CustomError");
 
 exports.getAllPackageOrderHistory = async (req, res, next) => {
   try {
-    const allOrderOrderData = await PackageOrder.findAll({
+    const allPackageOrderData = await PackageOrder.findAll({
       include: User,
     });
 
-    res.status(200).json({ allOrderOrderData });
+    res.status(200).json({ allPackageOrderData });
   } catch (error) {
     console.log(error);
 
