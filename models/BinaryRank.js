@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
   BinaryRank.associate = (models) => {
     BinaryRank.hasOne(models.UserBinaryRank, {
       foreignKey: {
-        name: "BinaryRankId",
+        name: "binaryRankId",
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",

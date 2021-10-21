@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   UserBinaryRank.associate = (models) => {
     UserBinaryRank.belongsTo(models.BinaryRank, {
       foreignKey: {
-        name: "BinaryRankId",
+        name: "binaryRankId",
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
 
     UserBinaryRank.belongsTo(models.User, {
       foreignKey: {
-        name: "UserId",
+        name: "userId",
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",

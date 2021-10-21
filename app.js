@@ -47,7 +47,7 @@ app.use("/", (req, res, next) => {
 });
 
 // const { sequelize } = require("./models");
-// sequelize.sync({ force: false }).then(() => console.log("DB sync"));
+// sequelize.sync({ force: true }).then(() => console.log("DB sync"));
 
 app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
 

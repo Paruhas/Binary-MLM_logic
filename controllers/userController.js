@@ -4,6 +4,7 @@ const {
   PackageDuration,
   InvitedHistory,
   BinaryTree,
+  BinaryRank,
   UserBinaryRank,
   sequelize,
 } = require("../models");
@@ -73,22 +74,20 @@ exports.register = async (req, res, next) => {
 
       const createBinaryRank = await UserBinaryRank.create(
         {
+          binaryRankId: 1,
           userId: createNewUser.id,
-          binaryRankId: "1",
         },
         { transaction: transaction }
       );
 
       await transaction.commit();
 
-      return res
-        .status(201)
-        .json({
-          createNewUser,
-          createPackageDuration,
-          createBinaryTree,
-          createBinaryRank,
-        });
+      return res.status(201).json({
+        createNewUser,
+        createPackageDuration,
+        createBinaryTree,
+        createBinaryRank,
+      });
     }
 
     /* ----- New user WITH ref code ----- */
@@ -146,8 +145,8 @@ exports.register = async (req, res, next) => {
 
       const createBinaryRank = await UserBinaryRank.create(
         {
+          binaryRankId: 1,
           userId: createNewUser.id,
-          binaryRankId: "1",
         },
         { transaction: transaction }
       );
