@@ -14,7 +14,7 @@ const isEmail =
 exports.register = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
-    const { username, fromRefCode, email } = req.body;
+    const { username, fromRefCode } = req.body;
     let noRefCode = false;
 
     /* ----- Validate username ----- */
@@ -28,20 +28,6 @@ exports.register = async (req, res, next) => {
     if (thisUsernameIsAlreadyInDB) {
       throw new CustomError(400, "This username is already in database");
     }
-
-    // /* ----- Validate email ----- */
-    // if (!email || !email.trim()) {
-    //   throw new CustomError(400, "email is require");
-    // }
-    // if (!isEmail.test(email)) {
-    //   throw new CustomError(400, "this email is invalid format");
-    // }
-    // const thisEmailIsAlreadyInDB = await User.findOne({
-    //   where: { email: email },
-    // });
-    // if (thisEmailIsAlreadyInDB) {
-    //   throw new CustomError(400, "This email is already in database");
-    // }
 
     /* ----- Manage reference code ----- */
     if (!fromRefCode || !fromRefCode.trim()) {

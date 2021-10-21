@@ -68,6 +68,14 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
     });
+
+    User.hasOne(models.UserBinaryRank, {
+      foreignKey: {
+        name: "userId",
+      },
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
+    });
   };
 
   return User;

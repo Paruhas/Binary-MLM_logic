@@ -43,8 +43,9 @@ exports.createPackage = async (req, res, next) => {
         if (!item.price || !item.price.trim()) {
           throw new CustomError(400, "Price is require");
         }
-        if (!+item.price > 0)
+        if (!+item.price > 0) {
           throw new CustomError(400, "Price must be int and not minus");
+        }
         if (!item.duration || !item.duration.trim()) {
           throw new CustomError(400, "Duration is require");
         }
@@ -107,7 +108,7 @@ exports.createPackage = async (req, res, next) => {
 
       await transaction.commit();
 
-      res
+      return res
         .status(201)
         .json({ message: "Create new package successful", createPackage });
     }

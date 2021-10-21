@@ -8,6 +8,7 @@ const userRouter = require("./routes/userRouter");
 const packageRouter = require("./routes/packageRouter");
 const packageOrderRouter = require("./routes/packageOrderRouter");
 const binaryTreeRouter = require("./routes/binaryTreeRouter");
+const binaryRankRouter = require("./routes/binaryRankRouter");
 
 app.use(cors());
 app.use(compression());
@@ -22,8 +23,9 @@ app.use("/home", (req, res, next) => {
 
 app.use("/user", userRouter);
 app.use("/package", packageRouter);
-app.use("/binary-tree", binaryTreeRouter);
 app.use("/package-order", packageOrderRouter);
+app.use("/binary-tree", binaryTreeRouter);
+app.use("/binary-rank", binaryRankRouter);
 
 // Handler Error
 app.use((err, req, res, next) => {
@@ -45,7 +47,7 @@ app.use("/", (req, res, next) => {
 });
 
 // const { sequelize } = require("./models");
-// sequelize.sync({ force: true }).then(() => console.log("DB sync"));
+// sequelize.sync({ force: false }).then(() => console.log("DB sync"));
 
 app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
 
