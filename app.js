@@ -9,6 +9,7 @@ const packageRouter = require("./routes/packageRouter");
 const packageOrderRouter = require("./routes/packageOrderRouter");
 const binaryTreeRouter = require("./routes/binaryTreeRouter");
 const binaryRankRouter = require("./routes/binaryRankRouter");
+const commissionHistoryRouter = require("./routes/commissionHistoryRouter");
 
 app.use(cors());
 app.use(compression());
@@ -26,6 +27,7 @@ app.use("/package", packageRouter);
 app.use("/package-order", packageOrderRouter);
 app.use("/binary-tree", binaryTreeRouter);
 app.use("/binary-rank", binaryRankRouter);
+app.use("/commission-history", commissionHistoryRouter);
 
 // Handler Error
 app.use((err, req, res, next) => {

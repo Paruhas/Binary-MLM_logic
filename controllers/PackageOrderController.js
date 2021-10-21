@@ -40,11 +40,15 @@ exports.getAllPackageOrderByUserId = async (req, res, next) => {
 
 exports.getSinglePackageOrderByIdByUserId = async (req, res, next) => {
   try {
-    const { userId, packageId } = req.params;
+    const { userId, packageOrderId } = req.params;
 
     const singlePackageOrderByIdByUserId = await PackageOrder.findAll({
-      where: { [Op.and]: [{ id: packageId }, { userId: userId }] },
+      where: { [Op.and]: [{ id: packageOrderId }, { userId: userId }] },
     });
+
+    if (!singlePackageOrderByIdByUserId) {
+      throw new CustomError(400, "PackageOrder not found");
+    }
 
     res.status(200).json({ singlePackageOrderByIdByUserId });
   } catch (error) {

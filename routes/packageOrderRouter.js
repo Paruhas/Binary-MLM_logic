@@ -8,7 +8,7 @@ packageOrderRouter.get(
   PackageOrderController.getAllPackageOrderByUserId
 );
 packageOrderRouter.get(
-  "/:userId/:packageId",
+  "/:userId/:packageOrderId",
   PackageOrderController.getSinglePackageOrderByIdByUserId
 );
 packageOrderRouter.post(
