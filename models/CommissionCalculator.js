@@ -5,10 +5,12 @@ module.exports = (sequelize, DataTypes) => {
       totalPackageBuy: {
         type: DataTypes.DECIMAL(19, 4),
         allowNull: false,
+        defaultValue: 0,
       },
       packageBuyForCalculator: {
         type: DataTypes.DECIMAL(19, 4),
         allowNull: false,
+        defaultValue: 0,
       },
     },
     {

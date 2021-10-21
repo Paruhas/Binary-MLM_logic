@@ -74,7 +74,7 @@ exports.createBinaryRank = async (req, res, next) => {
       await transaction.commit();
 
       return res.status(201).json({
-        message: "Create new BinaryRanks successful",
+        message: "bulkCreate new BinaryRanks successful",
         createBinaryRanks,
       });
     }

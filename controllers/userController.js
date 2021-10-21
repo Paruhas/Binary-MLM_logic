@@ -4,8 +4,8 @@ const {
   PackageDuration,
   InvitedHistory,
   BinaryTree,
-  BinaryRank,
   UserBinaryRank,
+  CommissionCalculator,
   sequelize,
 } = require("../models");
 const CustomError = require("../utils/CustomError");
@@ -80,6 +80,15 @@ exports.register = async (req, res, next) => {
         { transaction: transaction }
       );
 
+      const createCommissionCalculator = await CommissionCalculator.create(
+        {
+          userId: createNewUser.id,
+          totalPackageBuy: 0,
+          packageBuyForCalculator: 0,
+        },
+        { transaction: transaction }
+      );
+
       await transaction.commit();
 
       return res.status(201).json({
@@ -87,6 +96,7 @@ exports.register = async (req, res, next) => {
         createPackageDuration,
         createBinaryTree,
         createBinaryRank,
+        createCommissionCalculator,
       });
     }
 

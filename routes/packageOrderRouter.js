@@ -15,6 +15,5 @@ packageOrderRouter.post(
   "/:packageId",
   PackageOrderController.createPackageOrder
 );
-// packageOrderRouter.patch("/:id", () => {});
 
 module.exports = packageOrderRouter;
