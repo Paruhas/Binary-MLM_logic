@@ -94,9 +94,9 @@ exports.register = async (req, res, next) => {
       return res.status(201).json({
         createNewUser,
         createPackageDuration,
-        createBinaryTree,
         createBinaryRank,
         createCommissionCalculator,
+        createBinaryTree,
       });
     }
 
@@ -161,12 +161,22 @@ exports.register = async (req, res, next) => {
         { transaction: transaction }
       );
 
+      const createCommissionCalculator = await CommissionCalculator.create(
+        {
+          userId: createNewUser.id,
+          totalPackageBuy: 0,
+          packageBuyForCalculator: 0,
+        },
+        { transaction: transaction }
+      );
+
       await transaction.commit();
 
       return res.status(201).json({
         createNewUser,
         createPackageDuration,
         createBinaryRank,
+        createCommissionCalculator,
         createInvitedHistories,
       });
     }
