@@ -76,6 +76,22 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
     });
+
+    User.hasMany(models.CommissionHistory, {
+      foreignKey: {
+        name: "userId",
+      },
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
+    });
+
+    User.hasOne(models.CommissionCalculator, {
+      foreignKey: {
+        name: "userId",
+      },
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
+    });
   };
 
   return User;
