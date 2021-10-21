@@ -4,6 +4,7 @@ const {
   PackageDuration,
   InvitedHistory,
   BinaryTree,
+  UserBinaryRank,
   sequelize,
 } = require("../models");
 const CustomError = require("../utils/CustomError");
@@ -70,11 +71,24 @@ exports.register = async (req, res, next) => {
         }
       );
 
+      const createBinaryRank = await UserBinaryRank.create(
+        {
+          userId: createNewUser.id,
+          binaryRankId: "1",
+        },
+        { transaction: transaction }
+      );
+
       await transaction.commit();
 
       return res
         .status(201)
-        .json({ createNewUser, createPackageDuration, createBinaryTree });
+        .json({
+          createNewUser,
+          createPackageDuration,
+          createBinaryTree,
+          createBinaryRank,
+        });
     }
 
     /* ----- New user WITH ref code ----- */
@@ -130,11 +144,22 @@ exports.register = async (req, res, next) => {
         { transaction: transaction }
       );
 
+      const createBinaryRank = await UserBinaryRank.create(
+        {
+          userId: createNewUser.id,
+          binaryRankId: "1",
+        },
+        { transaction: transaction }
+      );
+
       await transaction.commit();
 
-      return res
-        .status(201)
-        .json({ createNewUser, createPackageDuration, createInvitedHistories });
+      return res.status(201).json({
+        createNewUser,
+        createPackageDuration,
+        createBinaryRank,
+        createInvitedHistories,
+      });
     }
 
     throw new CustomError(500, "Internal server error");
