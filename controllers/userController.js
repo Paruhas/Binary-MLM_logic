@@ -576,7 +576,7 @@ exports.placeUser = async (req, res, next) => {
 
         return res.status(200).json({
           message: "place user in Binary Tree successful",
-          case: "case1: !parentIdPosition || +parentIdPosition === getRefCodeUserData.id",
+          case: "case1: !parentIdPosition || +parentIdPosition === getRefCodeUserData.id [InviterUser is not a parent in BinaryTree yet]",
           createBinaryTree,
         });
       }
@@ -624,7 +624,7 @@ exports.placeUser = async (req, res, next) => {
 
         return res.status(200).json({
           message: "place user in Binary Tree successful",
-          case: "case2: !parentIdPosition || +parentIdPosition === getRefCodeUserData.id",
+          case: "case2: !parentIdPosition || +parentIdPosition === getRefCodeUserData.id [InviterUser is ALREADY PARENT at this position in BinaryTree]",
           createBinaryTree,
         });
       }
