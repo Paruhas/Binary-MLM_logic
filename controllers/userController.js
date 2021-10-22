@@ -191,121 +191,6 @@ exports.register = async (req, res, next) => {
   }
 };
 
-exports.getUserById = async (req, res, next) => {
-  try {
-    const { userId } = req.params;
-
-    const userData = await User.findByPk(userId, {
-      attributes: [
-        "id",
-        "username",
-        "refCodeL",
-        "refCodeR",
-        "refFrom",
-        "refFromUserId",
-        "createdAt",
-      ],
-      include: {
-        model: PackageDuration,
-        attributes: ["expireDate", "packageStatus", "updatedAt"],
-      },
-    });
-
-    if (!userData) {
-      throw new CustomError(400, "User not found");
-    }
-
-    // ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) -----
-    const allChild = [];
-
-    async function getAllChild(params) {
-      const Fn_arr = [];
-
-      const resultFromDB = await InvitedHistory.findAll({
-        where: { user_invite_send: params },
-      });
-
-      if (resultFromDB.length == 0) {
-        allChild.sort((a, b) => a - b);
-        return;
-      }
-
-      for (let i = 0; i < resultFromDB.length; i++) {
-        let child = resultFromDB[i];
-
-        if (!allChild.includes(child.userInvited)) {
-          await allChild.push(child.userInvited);
-
-          await Fn_arr.push(child.userInvited);
-
-          await getAllChild(Fn_arr);
-        }
-      }
-    }
-
-    await getAllChild([userId]);
-
-    // ----- Get all parents (UserId that send invite to this User AND top User that send invited to send invite User (and more) ) -----
-    const allParents = [];
-
-    async function getAllParents(params) {
-      const Fn_arr = [];
-
-      const resultFromDB = await InvitedHistory.findAll({
-        where: { user_invited: params },
-      });
-
-      if (resultFromDB.length == 0) {
-        allParents.sort((a, b) => a - b);
-        return;
-      }
-
-      for (let i = 0; i < resultFromDB.length; i++) {
-        let child = resultFromDB[i];
-
-        if (!allParents.includes(child.userInviteSend)) {
-          await allParents.push(child.userInviteSend);
-        }
-
-        await Fn_arr.push(child.userInviteSend);
-
-        await getAllParents(Fn_arr);
-      }
-    }
-
-    await getAllParents([userId]);
-
-    const userInvitedHistoryData = await InvitedHistory.findAll({
-      where: { userInviteSend: userId },
-    });
-
-    let allDownLineUserData = [];
-    if (allChild.length !== 0) {
-      allDownLineUserData = await User.findAll({
-        where: { id: allChild },
-      });
-    }
-
-    let allUpLineUserData = [];
-    if (allParents.length !== 0) {
-      allUpLineUserData = await User.findAll({
-        where: { id: allParents },
-      });
-    }
-
-    res.status(200).json({
-      userData,
-      userInvitedHistoryData,
-      allDownLineUserData,
-      allUpLineUserData,
-    });
-  } catch (error) {
-    console.log(error);
-
-    next(error);
-  }
-};
-
 exports.placeUser = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
@@ -752,22 +637,117 @@ exports.placeUser = async (req, res, next) => {
   }
 };
 
-exports.test1 = async (req, res, next) => {
+exports.getUserById = async (req, res, next) => {
   try {
-    const { test } = req.body;
+    const { userId } = req.params;
 
-    let newTest = test * 2;
+    const userData = await User.findByPk(userId, {
+      attributes: [
+        "id",
+        "username",
+        "refCodeL",
+        "refCodeR",
+        "refFrom",
+        "refFromUserId",
+        "createdAt",
+      ],
+      include: {
+        model: PackageDuration,
+        attributes: ["expireDate", "packageStatus", "updatedAt"],
+      },
+    });
 
-    req.body.newTest = newTest;
-    next();
+    if (!userData) {
+      throw new CustomError(400, "User not found");
+    }
+
+    // ----- Get all child (UserId that this user has invited AND userInvited has invited (and more) ) -----
+    const allChild = [];
+
+    async function getAllChild(params) {
+      const Fn_arr = [];
+
+      const resultFromDB = await InvitedHistory.findAll({
+        where: { user_invite_send: params },
+      });
+
+      if (resultFromDB.length == 0) {
+        allChild.sort((a, b) => a - b);
+        return;
+      }
+
+      for (let i = 0; i < resultFromDB.length; i++) {
+        let child = resultFromDB[i];
+
+        if (!allChild.includes(child.userInvited)) {
+          await allChild.push(child.userInvited);
+
+          await Fn_arr.push(child.userInvited);
+
+          await getAllChild(Fn_arr);
+        }
+      }
+    }
+
+    await getAllChild([userId]);
+
+    // ----- Get all parents (UserId that send invite to this User AND top User that send invited to send invite User (and more) ) -----
+    const allParents = [];
+
+    async function getAllParents(params) {
+      const Fn_arr = [];
+
+      const resultFromDB = await InvitedHistory.findAll({
+        where: { user_invited: params },
+      });
+
+      if (resultFromDB.length == 0) {
+        allParents.sort((a, b) => a - b);
+        return;
+      }
+
+      for (let i = 0; i < resultFromDB.length; i++) {
+        let child = resultFromDB[i];
+
+        if (!allParents.includes(child.userInviteSend)) {
+          await allParents.push(child.userInviteSend);
+        }
+
+        await Fn_arr.push(child.userInviteSend);
+
+        await getAllParents(Fn_arr);
+      }
+    }
+
+    await getAllParents([userId]);
+
+    const userInvitedHistoryData = await InvitedHistory.findAll({
+      where: { userInviteSend: userId },
+    });
+
+    let allDownLineUserData = [];
+    if (allChild.length !== 0) {
+      allDownLineUserData = await User.findAll({
+        where: { id: allChild },
+      });
+    }
+
+    let allUpLineUserData = [];
+    if (allParents.length !== 0) {
+      allUpLineUserData = await User.findAll({
+        where: { id: allParents },
+      });
+    }
+
+    res.status(200).json({
+      userData,
+      userInvitedHistoryData,
+      allDownLineUserData,
+      allUpLineUserData,
+    });
   } catch (error) {
     console.log(error);
-  }
-};
-exports.test2 = async (req, res, next) => {
-  try {
-    return res.status(999).json({ newTest: req.body.newTest });
-  } catch (error) {
-    console.log(error);
+
+    next(error);
   }
 };
