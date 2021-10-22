@@ -5,6 +5,7 @@ const {
   User,
   PackageOrder,
   PackageDuration,
+  CommissionCalculator,
 } = require("../models");
 const CustomError = require("../utils/CustomError");
 
@@ -129,20 +130,37 @@ exports.createPackageOrder = async (req, res, next) => {
           expireDate: newExpireDate,
           packageStatus: "ACTIVE",
         },
-        { where: { userId: userId } },
-        { transaction: transaction }
+        { where: { userId: userId }, transaction: transaction }
       );
 
       if (!updatePackageDuration) {
         throw new CustomError(400, "No data to update; rollback transaction");
       }
 
+      const updateCommissionCalculator_thisUser =
+        await CommissionCalculator.findOne({
+          where: { userId: userId },
+        });
+
+      updateCommissionCalculator_thisUser.totalPackageBuy =
+        +updateCommissionCalculator_thisUser.totalPackageBuy +
+        +findPackageById.price;
+      updateCommissionCalculator_thisUser.packageBuyForCalculator =
+        +updateCommissionCalculator_thisUser.packageBuyForCalculator +
+        +findPackageById.price;
+
+      await updateCommissionCalculator_thisUser.save({
+        transaction: transaction,
+      });
+
+      throw new CustomError(999, "TEST");
+
+      await transaction.commit();
+
       const newUserData = await User.findOne({
         where: { id: userId },
         include: PackageDuration,
       });
-
-      await transaction.commit();
 
       return res.status(201).json({
         message: "Buy package successful",
@@ -177,8 +195,7 @@ exports.createPackageOrder = async (req, res, next) => {
         {
           expireDate: newExpireDate,
         },
-        { where: { userId: userId } },
-        { transaction: transaction }
+        { where: { userId: userId }, transaction: transaction }
       );
 
       if (!updatePackageDuration) {
