@@ -6,6 +6,7 @@ const {
   PackageOrder,
   PackageDuration,
   CommissionCalculator,
+  BinaryTree,
 } = require("../models");
 const CustomError = require("../utils/CustomError");
 
@@ -140,6 +141,7 @@ exports.createPackageOrder = async (req, res, next) => {
       //////////////////////////////////////////////////////////////////////
       // =============== CommissionCalculator Section ======================
       //////////////////////////////////////////////////////////////////////
+
       const updateCommissionCalculator_thisUser =
         await CommissionCalculator.findOne({
           where: { userId: userId },
@@ -156,7 +158,45 @@ exports.createPackageOrder = async (req, res, next) => {
         transaction: transaction,
       });
 
-      throw new CustomError(999, "TEST");
+      const allParent_for_thisUser = [];
+
+      async function getAllParent_for_thisUser(param) {
+        const findParentUser = await BinaryTree.findOne({
+          where: { userId: param },
+        });
+
+        if (findParentUser.dataValues.parentId) {
+          allParent_for_thisUser.push(findParentUser.dataValues.parentId);
+
+          await getAllParent_for_thisUser(findParentUser.dataValues.parentId);
+        }
+
+        if (!findParentUser.dataValues.parentId) {
+          return;
+        }
+      }
+
+      await getAllParent_for_thisUser(userId);
+
+      const updateCommissionCalculator_parentUser =
+        await CommissionCalculator.findAll({
+          where: { userId: allParent_for_thisUser },
+        });
+
+      async function sequelize_dotSaveLoop(arrData) {
+        for (let i = 0; i < arrData.length; i++) {
+          arrData[i].packageBuyForCalculator =
+            +arrData[i].packageBuyForCalculator + +findPackageById.price;
+
+          await arrData[i].save({
+            transaction: transaction,
+          });
+        }
+      }
+
+      await sequelize_dotSaveLoop(updateCommissionCalculator_parentUser);
+
+      // throw new CustomError(999, "TEST");
 
       //////////////////////////////////////////////////////////////////////
 
@@ -171,6 +211,7 @@ exports.createPackageOrder = async (req, res, next) => {
         message: "Buy package successful",
         createPackageOrder,
         newUserData,
+        commissionCalculatorData: updateCommissionCalculator_thisUser,
       });
     }
 
@@ -212,12 +253,75 @@ exports.createPackageOrder = async (req, res, next) => {
         include: PackageDuration,
       });
 
+      //////////////////////////////////////////////////////////////////////
+      // =============== CommissionCalculator Section ======================
+      //////////////////////////////////////////////////////////////////////
+
+      const updateCommissionCalculator_thisUser =
+        await CommissionCalculator.findOne({
+          where: { userId: userId },
+        });
+
+      updateCommissionCalculator_thisUser.totalPackageBuy =
+        +updateCommissionCalculator_thisUser.totalPackageBuy +
+        +findPackageById.price;
+      updateCommissionCalculator_thisUser.packageBuyForCalculator =
+        +updateCommissionCalculator_thisUser.packageBuyForCalculator +
+        +findPackageById.price;
+
+      await updateCommissionCalculator_thisUser.save({
+        transaction: transaction,
+      });
+
+      const allParent_for_thisUser = [];
+
+      async function getAllParent_for_thisUser(param) {
+        const findParentUser = await BinaryTree.findOne({
+          where: { userId: param },
+        });
+
+        if (findParentUser.dataValues.parentId) {
+          allParent_for_thisUser.push(findParentUser.dataValues.parentId);
+
+          await getAllParent_for_thisUser(findParentUser.dataValues.parentId);
+        }
+
+        if (!findParentUser.dataValues.parentId) {
+          return;
+        }
+      }
+
+      await getAllParent_for_thisUser(userId);
+
+      const updateCommissionCalculator_parentUser =
+        await CommissionCalculator.findAll({
+          where: { userId: allParent_for_thisUser },
+        });
+
+      async function sequelize_dotSaveLoop(arrData) {
+        for (let i = 0; i < arrData.length; i++) {
+          arrData[i].packageBuyForCalculator =
+            +arrData[i].packageBuyForCalculator + +findPackageById.price;
+
+          await arrData[i].save({
+            transaction: transaction,
+          });
+        }
+      }
+
+      await sequelize_dotSaveLoop(updateCommissionCalculator_parentUser);
+
+      // throw new CustomError(999, "TEST");
+
+      //////////////////////////////////////////////////////////////////////
+
       await transaction.commit();
 
       return res.status(201).json({
         message: "Buy package successful",
         createPackageOrder,
         newUserData,
+        commissionCalculatorData: updateCommissionCalculator_thisUser,
       });
     }
 
