@@ -1,12 +1,5 @@
 const { Op } = require("sequelize");
-const {
-  sequelize,
-  Package,
-  User,
-  PackageOrder,
-  PackageDuration,
-  BinaryTree,
-} = require("../models");
+const { sequelize, User, BinaryTree } = require("../models");
 const CustomError = require("../utils/CustomError");
 
 exports.getBinaryTriangle = async (req, res, next) => {

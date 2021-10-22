@@ -2,12 +2,11 @@ module.exports = (sequelize, DataTypes) => {
   const BinaryTree = sequelize.define(
     "BinaryTree",
     {
-      parentId: {
-        type: DataTypes.STRING,
-        // allowNull: false,
-        allowNull: true,
-        defaultValue: null,
-      },
+      // parentId: {
+      //   type: DataTypes.STRING,
+      //   allowNull: true,
+      //   defaultValue: null,
+      // },
       position: {
         type: DataTypes.ENUM("L", "R"),
         allowNull: true,
@@ -28,7 +27,17 @@ module.exports = (sequelize, DataTypes) => {
     BinaryTree.belongsTo(models.User, {
       foreignKey: {
         name: "userId",
-        // allowNull: true,
+        as: "userId",
+      },
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
+    });
+    BinaryTree.belongsTo(models.User, {
+      foreignKey: {
+        name: "parentId",
+        as: "parentId",
+        allowNull: true,
+        defaultValue: null,
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",

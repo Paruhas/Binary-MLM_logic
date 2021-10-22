@@ -1,12 +1,5 @@
 const { Op } = require("sequelize");
-const {
-  User,
-  PackageDuration,
-  InvitedHistory,
-  BinaryTree,
-  BinaryRank,
-  sequelize,
-} = require("../models");
+const { BinaryRank, sequelize } = require("../models");
 const CustomError = require("../utils/CustomError");
 
 exports.getAllBinaryRank = async (req, res, next) => {

@@ -62,8 +62,19 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     User.hasMany(models.BinaryTree, {
+      as: "userId",
       foreignKey: {
         name: "userId",
+      },
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
+    });
+    User.hasMany(models.BinaryTree, {
+      as: "parentId",
+      foreignKey: {
+        name: "parentId",
+        allowNull: true,
+        defaultValue: null,
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
