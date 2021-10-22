@@ -137,6 +137,9 @@ exports.createPackageOrder = async (req, res, next) => {
         throw new CustomError(400, "No data to update; rollback transaction");
       }
 
+      //////////////////////////////////////////////////////////////////////
+      // =============== CommissionCalculator Section ======================
+      //////////////////////////////////////////////////////////////////////
       const updateCommissionCalculator_thisUser =
         await CommissionCalculator.findOne({
           where: { userId: userId },
@@ -154,6 +157,8 @@ exports.createPackageOrder = async (req, res, next) => {
       });
 
       throw new CustomError(999, "TEST");
+
+      //////////////////////////////////////////////////////////////////////
 
       await transaction.commit();
 
