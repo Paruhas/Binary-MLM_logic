@@ -124,6 +124,7 @@ exports.createPackage = async (req, res, next) => {
 };
 
 exports.updatePackage = async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
     const { id } = req.params;
     let { name, description, price, duration } = req.body;
@@ -170,6 +171,7 @@ exports.updatePackage = async (req, res, next) => {
       },
       {
         where: { id: id },
+        transaction: transaction,
       }
     );
 
@@ -179,12 +181,17 @@ exports.updatePackage = async (req, res, next) => {
 
     const updatedPackage = await Package.findOne({ where: { id: id } });
 
+    await transaction.commit();
+
     res.status(200).json({
       message: "Update package successful",
       updatedPackage,
     });
   } catch (error) {
+    await transaction.rollback();
+
     console.log(error);
+
     next(error);
   }
 };
