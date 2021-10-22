@@ -376,7 +376,7 @@ exports.placeUser = async (req, res, next) => {
         { transaction: transaction }
       );
 
-      // await transaction.commit();
+      await transaction.commit();
 
       return res.status(200).json({
         message: "place user in Binary Tree successful ",
@@ -572,7 +572,7 @@ exports.placeUser = async (req, res, next) => {
           { transaction: transaction }
         );
 
-        // await transaction.commit();
+        await transaction.commit();
 
         return res.status(200).json({
           message: "place user in Binary Tree successful",
@@ -620,7 +620,7 @@ exports.placeUser = async (req, res, next) => {
           { transaction: transaction }
         );
 
-        // await transaction.commit();
+        await transaction.commit();
 
         return res.status(200).json({
           message: "place user in Binary Tree successful",
