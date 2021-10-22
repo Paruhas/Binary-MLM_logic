@@ -361,11 +361,14 @@ exports.placeUser = async (req, res, next) => {
         await getLastUser_inBinaryTreeLine(resultFromDB.userId);
       }
 
-      await getLastUser_inBinaryTreeLine(getRefCodeUserData.id);
+      await getLastUser_inBinaryTreeLine(parentIdPosition);
 
       const createBinaryTree = await BinaryTree.create(
         {
-          parentId: lastUserData[0].userId,
+          parentId:
+            lastUserData.length === 0
+              ? parentIdPosition
+              : lastUserData[0].userId,
           position: position,
           placeByUserId: getRefCodeUserData.id,
           userId: newUserData.id,
@@ -373,7 +376,7 @@ exports.placeUser = async (req, res, next) => {
         { transaction: transaction }
       );
 
-      await transaction.commit();
+      // await transaction.commit();
 
       return res.status(200).json({
         message: "place user in Binary Tree successful ",
@@ -569,7 +572,7 @@ exports.placeUser = async (req, res, next) => {
           { transaction: transaction }
         );
 
-        await transaction.commit();
+        // await transaction.commit();
 
         return res.status(200).json({
           message: "place user in Binary Tree successful",
@@ -617,7 +620,7 @@ exports.placeUser = async (req, res, next) => {
           { transaction: transaction }
         );
 
-        await transaction.commit();
+        // await transaction.commit();
 
         return res.status(200).json({
           message: "place user in Binary Tree successful",
