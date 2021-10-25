@@ -174,9 +174,9 @@ exports.handlerCalculator = async (req, res, next) => {
     // console.log(userData_forCalculator, "userData_forCalculator");
 
     // *Flow commission pay and insert to DB
-    for (let i = 0; i < userData_forCalculator.length; i++) {
-      console.log(userData_forCalculator[i].dataValues, { runtime: i + 1 });
+    const createCommissionHistory_arr = [];
 
+    for (let i = 0; i < userData_forCalculator.length; i++) {
       let userData_CV = userData_forCalculator[i].dataValues;
 
       let insert_commissionRealPay = null;
@@ -189,42 +189,86 @@ exports.handlerCalculator = async (req, res, next) => {
         }
       }
 
-      console.log({
-        create_CommissionHistory: {
-          commission_before_pay: userData_CV.insert_commissionPay,
-          commission_pay: insert_commissionRealPay,
-          pay_status:
+      const createCommissionHistory = await CommissionHistory.create(
+        {
+          commissionBeforePay: userData_CV.insert_commissionPay,
+          commissionPay: insert_commissionRealPay,
+          payStatus:
             userData_CV.weakLeg_packageStatus === "ACTIVE"
               ? "PAID"
               : "NOT_PAID",
-          user_id: userData_CV.id,
+          userId: userData_CV.id,
         },
-        update_CommissionCalculator: {
-          package_buy_for_calculator: [
-            userData_CV.insert_newStrongLeg_packageBuyForCalculator,
+        { transaction: transaction }
+      );
+      createCommissionHistory_arr.push(createCommissionHistory);
+
+      const updateCommissionCalculator_Strong =
+        await CommissionCalculator.update(
+          {
+            packageBuyForCalculator:
+              userData_CV.insert_newStrongLeg_packageBuyForCalculator,
+          },
+          {
+            where: {
+              userId: userData_CV.strongLeg_userId,
+            },
+            transaction: transaction,
+          }
+        );
+
+      const updateCommissionCalculator_Weak = await CommissionCalculator.update(
+        {
+          packageBuyForCalculator:
             userData_CV.insert_newWeakLeg_packageBuyForCalculator,
-          ],
-          where: [userData_CV.strongLeg_userId, userData_CV.weakLeg_userId],
         },
-        update_UserBinaryRank: {
-          total_commission_point:
+        {
+          where: {
+            userId: userData_CV.weakLeg_userId,
+          },
+          transaction: transaction,
+        }
+      );
+
+      const updateUserBinaryRank = await UserBinaryRank.update(
+        {
+          totalCommissionPoint:
             +userData_CV.headUser_totalCommissionPoint +
             userData_CV.insert_commissionPoint,
-          where: {
-            user_id: userData_CV.id,
-          },
         },
-      });
+        {
+          where: {
+            userId: userData_CV.id,
+          },
+          transaction: transaction,
+        }
+      );
     }
 
-    await transaction.commit();
+    const resultData = [];
 
-    return res.status(200).json({
-      message: "handlerCalculator PATH",
+    for (let a = 0; a < createCommissionHistory_arr.length; a++) {
+      for (let b = 0; b < userData_forCalculator.length; b++) {
+        if (
+          createCommissionHistory_arr[a].userId === userData_forCalculator[b].id
+        ) {
+          userData_forCalculator[b].dataValues.commissionHistory =
+            createCommissionHistory_arr[a];
+          resultData.push(userData_forCalculator[b]);
+        }
+      }
+    }
+
+    // await transaction.commit();
+
+    res.status(200).json({
+      message: "Commission Calculator Complete",
       // allUserData,
-      userData_forCalculator,
-      binaryRank,
+      // userData_forCalculator,
+      // createCommissionHistory_arr,
+      resultData,
     });
+    await transaction.rollback();
   } catch (error) {
     await transaction.rollback();
 
