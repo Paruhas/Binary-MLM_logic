@@ -25,17 +25,17 @@ module.exports = (sequelize, DataTypes) => {
 
   BinaryTree.associate = (models) => {
     BinaryTree.belongsTo(models.User, {
+      as: "userData",
       foreignKey: {
         name: "userId",
-        as: "userId",
       },
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
     });
     BinaryTree.belongsTo(models.User, {
+      as: "childId",
       foreignKey: {
         name: "parentId",
-        as: "parentId",
         allowNull: true,
         defaultValue: null,
       },

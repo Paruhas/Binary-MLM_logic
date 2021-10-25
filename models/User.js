@@ -62,7 +62,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     User.hasMany(models.BinaryTree, {
-      as: "userId",
+      as: "parentId",
       foreignKey: {
         name: "userId",
       },
@@ -70,7 +70,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "RESTRICT",
     });
     User.hasMany(models.BinaryTree, {
-      as: "parentId",
+      as: "childId",
       foreignKey: {
         name: "parentId",
         allowNull: true,
