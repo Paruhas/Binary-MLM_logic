@@ -16,7 +16,12 @@ exports.getBinaryTriangle = async (req, res, next) => {
 
     const binaryTriangleData = await BinaryTree.findAll({
       where: { parentId: userId },
-      include: User,
+      include: [
+        {
+          model: User,
+          as: "userData",
+        },
+      ],
     });
 
     const userDataClone = { ...userData.dataValues };
@@ -24,10 +29,10 @@ exports.getBinaryTriangle = async (req, res, next) => {
     if (binaryTriangleData.length !== 0) {
       for (let i = 0; i < binaryTriangleData.length; i++) {
         if (binaryTriangleData[i].position == "L") {
-          userDataClone.BinaryTriangle_L = binaryTriangleData[i].User;
+          userDataClone.BinaryTriangle_L = binaryTriangleData[i].userData;
         }
         if (binaryTriangleData[i].position == "R") {
-          userDataClone.BinaryTriangle_R = binaryTriangleData[i].User;
+          userDataClone.BinaryTriangle_R = binaryTriangleData[i].userData;
         }
       }
     }

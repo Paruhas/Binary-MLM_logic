@@ -12,6 +12,7 @@ const {
 const CustomError = require("../utils/CustomError");
 
 exports.handlerCalculator = async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
     const allUserData = await User.findAll({
       attributes: ["id", "username"],
@@ -216,6 +217,8 @@ exports.handlerCalculator = async (req, res, next) => {
       });
     }
 
+    await transaction.commit();
+
     return res.status(200).json({
       message: "handlerCalculator PATH",
       // allUserData,
@@ -223,6 +226,8 @@ exports.handlerCalculator = async (req, res, next) => {
       binaryRank,
     });
   } catch (error) {
+    await transaction.rollback();
+
     console.log(error);
 
     next(error);
