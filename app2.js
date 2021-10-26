@@ -105,11 +105,18 @@
 
 // console.log(fun1(1)(2));
 
-// const dayjs = require("dayjs");
-// const utc = require("dayjs/plugin/utc");
-// const timezone = require("dayjs/plugin/timezone");
-// dayjs.extend(utc);
-// dayjs.extend(timezone);
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+const timezone = require("dayjs/plugin/timezone");
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+console.log(dayjs().startOf("date").utc().format());
+
+console.log(dayjs("2021-10-26").utc().format());
+console.log(dayjs("2022-12-25T06:00:18.000Z").utc().format());
+
+console.log(dayjs().utc().isBefore(dayjs("2021-10-26").utc()));
 
 // const firstDate = 1634272445821; // 15-10-64 11:34
 
@@ -124,72 +131,72 @@
 // const newTestDate = new Date(testDate.setMonth(testDate.getMonth() + duration));
 // console.log(newTestDate);
 
-const testArr = {
-  test: [
-    {
-      position: "L",
-      parentId: 1,
-      userId: 2,
-      userData: {
-        id: 2,
-        username: "User_02",
-        CommissionCalculator: {
-          packageBuyForCalculator: "120.0000",
-        },
-        PackageDuration: {
-          expireDate: "2021-11-25T06:00:19.000Z",
-          packageStatus: "ACTIVE",
-        },
-      },
-    },
-    {
-      position: "R",
-      parentId: 1,
-      userId: 3,
-      userData: {
-        id: 3,
-        username: "User_03",
-        CommissionCalculator: {
-          packageBuyForCalculator: "90.0000",
-        },
-        PackageDuration: {
-          expireDate: "2021-11-25T06:00:20.000Z",
-          packageStatus: "ACTIVE",
-        },
-      },
-    },
-  ],
-};
+// const testArr = {
+//   test: [
+//     {
+//       position: "L",
+//       parentId: 1,
+//       userId: 2,
+//       userData: {
+//         id: 2,
+//         username: "User_02",
+//         CommissionCalculator: {
+//           packageBuyForCalculator: "120.0000",
+//         },
+//         PackageDuration: {
+//           expireDate: "2021-11-25T06:00:19.000Z",
+//           packageStatus: "ACTIVE",
+//         },
+//       },
+//     },
+//     {
+//       position: "R",
+//       parentId: 1,
+//       userId: 3,
+//       userData: {
+//         id: 3,
+//         username: "User_03",
+//         CommissionCalculator: {
+//           packageBuyForCalculator: "90.0000",
+//         },
+//         PackageDuration: {
+//           expireDate: "2021-11-25T06:00:20.000Z",
+//           packageStatus: "ACTIVE",
+//         },
+//       },
+//     },
+//   ],
+// };
 
-console.log(testArr);
+// console.log(testArr);
 
-const testObj = {};
+// const testObj = {};
 
-if (
-  +testArr.test[0].userData.CommissionCalculator.packageBuyForCalculator >
-  +testArr.test[1].userData.CommissionCalculator.packageBuyForCalculator
-) {
-  console.log("0 > 1");
+// if (
+//   +testArr.test[0].userData.CommissionCalculator.packageBuyForCalculator >
+//   +testArr.test[1].userData.CommissionCalculator.packageBuyForCalculator
+// ) {
+//   console.log("0 > 1");
 
-  testObj.strongLeg_userId = testArr.test[0].userData;
-  testObj.weakLeg_userId = testArr.test[1].userData;
-}
+//   testObj.strongLeg_userId = testArr.test[0].userData;
+//   testObj.weakLeg_userId = testArr.test[1].userData;
+// }
 
-if (
-  +testArr.test[0].userData.CommissionCalculator.packageBuyForCalculator <
-  +testArr.test[1].userData.CommissionCalculator.packageBuyForCalculator
-) {
-  console.log("0 < 1");
+// if (
+//   +testArr.test[0].userData.CommissionCalculator.packageBuyForCalculator <
+//   +testArr.test[1].userData.CommissionCalculator.packageBuyForCalculator
+// ) {
+//   console.log("0 < 1");
 
-  testObj.strongLeg_userId = testArr.test[1].userData;
-  testObj.weakLeg_userId = testArr.test[0].userData;
-}
+//   testObj.strongLeg_userId = testArr.test[1].userData;
+//   testObj.weakLeg_userId = testArr.test[0].userData;
+// }
 
-console.log(testObj);
+// console.log(testObj);
 
-testArr.strongLeg_userId = { ...testObj.strongLeg_userId };
-testArr.weakLeg_userId = { ...testObj.weakLeg_userId };
+// testArr.strongLeg_userId = { ...testObj.strongLeg_userId };
+// testArr.weakLeg_userId = { ...testObj.weakLeg_userId };
 
-delete testArr.test;
+// delete testArr.test;
 
-console.log(testArr);
+// console.log(testArr);

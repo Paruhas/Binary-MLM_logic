@@ -11,7 +11,7 @@ const {
 } = require("../models");
 const CustomError = require("../utils/CustomError");
 
-exports.handlerCalculator = async (req, res, next) => {
+exports.handlerCommissionCalculator = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const allUserData = await User.findAll({
@@ -263,7 +263,7 @@ exports.handlerCalculator = async (req, res, next) => {
     // await transaction.commit();
 
     res.status(200).json({
-      message: "Commission Calculator Complete",
+      message: "Commission Calculator process complete",
       // allUserData,
       // userData_forCalculator,
       // createCommissionHistory_arr,

@@ -7,6 +7,7 @@ const app = express();
 const userRouter = require("./routes/userRouter");
 const packageRouter = require("./routes/packageRouter");
 const packageOrderRouter = require("./routes/packageOrderRouter");
+const packageDurationRouter = require("./routes/packageDurationRouter");
 const binaryTreeRouter = require("./routes/binaryTreeRouter");
 const binaryRankRouter = require("./routes/binaryRankRouter");
 const commissionHistoryRouter = require("./routes/commissionHistoryRouter");
@@ -19,13 +20,10 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 8000;
 
-app.use("/home", (req, res, next) => {
-  res.status(200).send("<h1>Welcome Home</h1>");
-});
-
 app.use("/user", userRouter);
 app.use("/package", packageRouter);
 app.use("/package-order", packageOrderRouter);
+app.use("/package-duration", packageDurationRouter);
 app.use("/binary-tree", binaryTreeRouter);
 app.use("/binary-rank", binaryRankRouter);
 app.use("/commission-history", commissionHistoryRouter);
