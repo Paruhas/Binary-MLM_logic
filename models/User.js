@@ -2,27 +2,26 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     "User",
     {
-      username: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      refCodeL: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      refCodeR: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      refFrom: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      refFromUserId: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      /*
+      // username: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // refCodeL: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // refCodeR: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // refFrom: {
+      //   type: DataTypes.STRING,
+      //   allowNull: true,
+      // },
+      // refFromUserId: {
+      //   type: DataTypes.STRING,
+      //   allowNull: true,
+      // },
       email: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -39,7 +38,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      */
     },
     {
       underscored: true,

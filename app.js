@@ -29,6 +29,9 @@ app.use("/binary-rank", binaryRankRouter);
 app.use("/commission-history", commissionHistoryRouter);
 app.use("/commission-calculator", commissionCalculatorRouter);
 
+const userRouterNew = require("./routes/userRouterNew");
+app.use("/new-user", userRouterNew);
+
 // Handler Error
 app.use((err, req, res, next) => {
   if (err.httpStatusCode) {
@@ -49,7 +52,7 @@ app.use("/", (req, res, next) => {
 });
 
 // const { sequelize } = require("./models");
-// sequelize.sync({ force: false }).then(() => console.log("DB sync"));
+// sequelize.sync({ force: true }).then(() => console.log("DB sync"));
 
 app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
 
