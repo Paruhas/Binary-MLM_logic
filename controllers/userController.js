@@ -194,7 +194,7 @@ exports.register = async (req, res, next) => {
 exports.placeUser = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
-    const { newUserData, refCode, parentIdPosition } = req.body;
+    const { refCode, newUserData, parentIdPosition } = req.body;
 
     const validateNewUser_hasData = await User.findByPk(newUserData.id);
     if (!validateNewUser_hasData) {

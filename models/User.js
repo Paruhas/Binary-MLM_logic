@@ -22,6 +22,24 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      /*
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      userRefKey: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      inputRefKey: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      inputFromUserId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      */
     },
     {
       underscored: true,
