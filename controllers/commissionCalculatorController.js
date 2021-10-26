@@ -161,6 +161,7 @@ exports.handlerCalculator = async (req, res, next) => {
           user_DataValues.insert_newWeakLeg_packageBuyForCalculator =
             +user_DataValues.weakLeg_packageBuyForCalculator -
             +user_DataValues.weakLeg_packageBuyForCalculator;
+
           ////////////////////////////////////////////////////////
           /* FOR CLEANING OUTPUT === Remove full associate childId (leg User) */
           ////////////////////////////////////////////////////////
@@ -195,7 +196,7 @@ exports.handlerCalculator = async (req, res, next) => {
           commissionPay: insert_commissionRealPay,
           payStatus:
             userData_CV.weakLeg_packageStatus === "ACTIVE"
-              ? "PAID"
+              ? "PENDING"
               : "NOT_PAID",
           userId: userData_CV.id,
         },

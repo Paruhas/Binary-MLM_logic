@@ -53,3 +53,31 @@ exports.getSingleCommissionHistoryByIdByUserId = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateCommissionHistory_payStatus = async (req, res, next) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const updateCommissionHistory = await CommissionHistory.update(
+      {
+        payStatus: "PAID",
+      },
+      { where: { payStatus: "PENDING" }, transaction: transaction }
+    );
+
+    if (updateCommissionHistory[0] === 0) {
+      throw new CustomError(400, "no update row in CommissionHistory");
+    }
+
+    await transaction.commit();
+
+    return res
+      .status(200)
+      .json({ message: "Update commission payment status successful" });
+  } catch (error) {
+    await transaction.rollback();
+
+    console.log(error);
+
+    next(error);
+  }
+};

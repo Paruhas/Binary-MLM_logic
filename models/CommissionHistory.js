@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       payStatus: {
-        type: DataTypes.ENUM("PAID", "NOT_PAID"),
+        type: DataTypes.ENUM("PENDING", "PAID", "NOT_PAID"),
         allowNull: false,
       },
     },

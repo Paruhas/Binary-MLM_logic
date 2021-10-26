@@ -14,5 +14,9 @@ commissionHistoryRouter.get(
   "/:userId/:commissionHistoryId",
   commissionHistoryController.getSingleCommissionHistoryByIdByUserId
 );
+commissionHistoryRouter.put(
+  "/",
+  commissionHistoryController.updateCommissionHistory_payStatus
+);
 
 module.exports = commissionHistoryRouter;
