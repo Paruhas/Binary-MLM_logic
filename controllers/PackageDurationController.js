@@ -58,7 +58,7 @@ exports.handlerPackageDurationExpire = async (req, res, next) => {
     return res.status(200).json({
       message: "User packageDuration's expireDate process complete",
       updatedUserPackageDuration:
-        countArr.length === 0 ? "" : `${countArr.length + 1} user`,
+        countArr.length === 0 ? "" : `${countArr.length} user`,
     });
   } catch (error) {
     await transaction.rollback();
