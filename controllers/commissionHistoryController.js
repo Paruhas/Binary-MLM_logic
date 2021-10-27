@@ -18,10 +18,28 @@ exports.getAllCommissionHistory = async (req, res, next) => {
 
 exports.getAllCommissionHistoryUserId = async (req, res, next) => {
   try {
-    const { userId } = req.params;
+    const { refKey } = req.params;
+    const { id } = req.query;
+
+    const isId = id === "true";
+
+    const findById = { id: refKey };
+    const findByRefKey = { userRefKey: refKey };
+
+    let searchById = false;
+    if (isId) {
+      searchById = true;
+    }
+
+    const userData = await User.findOne({
+      where: searchById ? findById : findByRefKey,
+    });
+    if (!userData) {
+      throw new CustomError(400, "User not found");
+    }
 
     const allCommissionHistoryByUserId = await CommissionHistory.findAll({
-      where: { userId: userId },
+      where: { userId: userData.id },
     });
 
     res.status(200).json({ allCommissionHistoryByUserId });
@@ -34,14 +52,33 @@ exports.getAllCommissionHistoryUserId = async (req, res, next) => {
 
 exports.getSingleCommissionHistoryByIdByUserId = async (req, res, next) => {
   try {
-    const { userId, commissionHistoryId } = req.params;
+    const { refKey, commissionHistoryId } = req.params;
+    const { id } = req.query;
+
+    const isId = id === "true";
+
+    const findById = { id: refKey };
+    const findByRefKey = { userRefKey: refKey };
+
+    let searchById = false;
+    if (isId) {
+      searchById = true;
+    }
+
+    const userData = await User.findOne({
+      where: searchById ? findById : findByRefKey,
+    });
+    if (!userData) {
+      throw new CustomError(400, "User not found");
+    }
 
     const singleCommissionHistoryByIdByUserId = await CommissionHistory.findAll(
       {
-        where: { [Op.and]: [{ id: commissionHistoryId }, { userId: userId }] },
+        where: {
+          [Op.and]: [{ id: commissionHistoryId }, { userId: userData.id }],
+        },
       }
     );
-
     if (!singleCommissionHistoryByIdByUserId) {
       throw new CustomError(400, "CommissionHistory not found");
     }

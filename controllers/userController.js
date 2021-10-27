@@ -462,7 +462,6 @@ exports.getUserByRefKey = async (req, res, next) => {
         },
       ],
     });
-
     if (!userData) {
       throw new CustomError(400, "User not found");
     }

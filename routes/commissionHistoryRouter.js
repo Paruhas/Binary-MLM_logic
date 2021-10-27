@@ -7,11 +7,11 @@ commissionHistoryRouter.get(
   commissionHistoryController.getAllCommissionHistory
 );
 commissionHistoryRouter.get(
-  "/:userId",
+  "/:refKey",
   commissionHistoryController.getAllCommissionHistoryUserId
 );
 commissionHistoryRouter.get(
-  "/:userId/:commissionHistoryId",
+  "/:refKey/:commissionHistoryId",
   commissionHistoryController.getSingleCommissionHistoryByIdByUserId
 );
 commissionHistoryRouter.put(
