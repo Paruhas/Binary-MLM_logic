@@ -79,7 +79,7 @@ exports.getSingleCommissionHistoryByIdByUserId = async (req, res, next) => {
         },
       }
     );
-    if (!singleCommissionHistoryByIdByUserId) {
+    if (singleCommissionHistoryByIdByUserId.length === 0) {
       throw new CustomError(400, "CommissionHistory not found");
     }
 
