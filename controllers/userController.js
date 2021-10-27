@@ -13,7 +13,7 @@ const CustomError = require("../utils/CustomError");
 const isEmail =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-exports.realRegisterUser = async (req, res, next) => {
+exports.register = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { newUserData, refCode, parentIdPosition } = req.body;
@@ -429,7 +429,7 @@ exports.realRegisterUser = async (req, res, next) => {
   }
 };
 
-exports.realGetUserById = async (req, res, next) => {
+exports.getUserById = async (req, res, next) => {
   try {
     let { id } = req.params;
     const { refKey } = req.query;
