@@ -429,21 +429,23 @@ exports.register = async (req, res, next) => {
   }
 };
 
-exports.getUserById = async (req, res, next) => {
+exports.getUserByRefKey = async (req, res, next) => {
   try {
-    let { id } = req.params;
-    const { refKey } = req.query;
+    const { refKey } = req.params;
+    const { id } = req.query;
 
-    const findById = { id: id };
-    const findByRefKey = { userRefKey: id };
+    const isId = id === "true";
 
-    let searchByRefKey = false;
-    if (refKey) {
-      searchByRefKey = true;
+    const findById = { id: refKey };
+    const findByRefKey = { userRefKey: refKey };
+
+    let searchById = false;
+    if (isId) {
+      searchById = true;
     }
 
     const userData = await User.findOne({
-      where: searchByRefKey ? findByRefKey : findById,
+      where: searchById ? findById : findByRefKey,
       include: [
         {
           model: PackageDuration,
