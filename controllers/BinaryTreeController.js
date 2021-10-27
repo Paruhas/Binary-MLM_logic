@@ -4,49 +4,35 @@ const CustomError = require("../utils/CustomError");
 
 exports.getBinaryTriangle = async (req, res, next) => {
   try {
-    const { userId } = req.params;
+    const { refKey } = req.params;
+    const { id } = req.query;
+
+    const isId = id === "true";
+
+    const findById = { id: refKey };
+    const findByRefKey = { userRefKey: refKey };
+
+    let searchById = false;
+    if (isId) {
+      searchById = true;
+    }
 
     const userData = await User.findOne({
-      where: { id: userId },
+      where: searchById ? findById : findByRefKey,
+      include: [
+        {
+          model: BinaryTree,
+          as: "childId",
+          include: [{ model: User, as: "userData" }],
+        },
+      ],
     });
 
     if (!userData) {
       throw new CustomError(400, "User not found");
     }
 
-    const binaryTriangleData = await BinaryTree.findAll({
-      where: { parentId: userId },
-      include: [
-        {
-          model: User,
-          as: "userData",
-        },
-      ],
-    });
-
-    const userDataClone = { ...userData.dataValues };
-
-    if (binaryTriangleData.length !== 0) {
-      for (let i = 0; i < binaryTriangleData.length; i++) {
-        if (binaryTriangleData[i].position == "L") {
-          userDataClone.BinaryTriangle_L = binaryTriangleData[i].userData;
-        }
-        if (binaryTriangleData[i].position == "R") {
-          userDataClone.BinaryTriangle_R = binaryTriangleData[i].userData;
-        }
-      }
-    }
-
-    if (!userDataClone.BinaryTriangle_L) {
-      userDataClone.BinaryTriangle_L = null;
-    }
-    if (!userDataClone.BinaryTriangle_R) {
-      userDataClone.BinaryTriangle_R = null;
-    }
-
-    return res.status(200).json({
-      userData: userDataClone,
-    });
+    return res.status(200).json({ userData });
   } catch (error) {
     console.log(error);
 
