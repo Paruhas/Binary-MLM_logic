@@ -3,8 +3,11 @@ const binaryRankRouter = express.Router();
 const binaryRankController = require("../controllers/binaryRankController");
 
 binaryRankRouter.get("/", binaryRankController.getAllBinaryRank);
-binaryRankRouter.get("/:rankId", binaryRankController.getSingleBinaryRankById);
+binaryRankRouter.get(
+  "/:rankLevel",
+  binaryRankController.getSingleBinaryRankByRankLevel
+);
 binaryRankRouter.post("/", binaryRankController.createBinaryRank);
-binaryRankRouter.patch("/:rankId", binaryRankController.updateBinaryRank);
+binaryRankRouter.put("/:rankLevel", binaryRankController.updateBinaryRank);
 
 module.exports = binaryRankRouter;

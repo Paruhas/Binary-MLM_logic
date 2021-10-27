@@ -14,12 +14,12 @@ exports.getAllBinaryRank = async (req, res, next) => {
   }
 };
 
-exports.getSingleBinaryRankById = async (req, res, next) => {
+exports.getSingleBinaryRankByRankLevel = async (req, res, next) => {
   try {
-    const { rankId } = req.params;
+    const { rankLevel } = req.params;
 
     const binaryRank = await BinaryRank.findOne({
-      where: { id: rankId },
+      where: { rankLevel: rankLevel },
     });
 
     if (!binaryRank) {
@@ -115,31 +115,19 @@ exports.createBinaryRank = async (req, res, next) => {
 
 exports.updateBinaryRank = async (req, res, next) => {
   try {
-    const { rankId } = req.params;
-    let { rankLevel, maxPayment } = req.body;
-
-    if (
-      (!rankLevel && !maxPayment) ||
-      (!rankLevel.trim() && !maxPayment.trim())
-    ) {
-      return res.status(400).json({
-        message: "All value are empty, nothing to update",
-      });
-    }
+    const { rankLevel } = req.params;
+    let { maxPayment } = req.body;
 
     const oldBinaryRankData = await BinaryRank.findOne({
-      where: { id: rankId },
+      where: { rankLevel: rankLevel },
     });
 
     if (!oldBinaryRankData) {
       return res.status(400).json({ message: "BinaryRank not found" });
     }
 
-    if (!rankLevel || !rankLevel.trim()) {
-      rankLevel = oldBinaryRankData.rankLevel;
-    }
     if (!maxPayment || !maxPayment.trim()) {
-      maxPayment = oldBinaryRankData.maxPayment;
+      throw new CustomError(400, "maxPayment can not be empty");
     }
     if (!+maxPayment > 0) {
       throw new CustomError(400, "maxPayment must be int and not minus");
@@ -147,11 +135,10 @@ exports.updateBinaryRank = async (req, res, next) => {
 
     const updateBinaryRank = await BinaryRank.update(
       {
-        rankLevel: rankLevel,
         maxPayment: maxPayment,
       },
       {
-        where: { id: rankId },
+        where: { rankLevel: rankLevel },
       }
     );
 
@@ -160,7 +147,7 @@ exports.updateBinaryRank = async (req, res, next) => {
     }
 
     const updatedBinaryRank = await BinaryRank.findOne({
-      where: { id: rankId },
+      where: { rankLevel: rankLevel },
     });
 
     res
