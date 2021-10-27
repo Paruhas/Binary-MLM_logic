@@ -4,12 +4,12 @@ const PackageOrderController = require("../controllers/PackageOrderController");
 
 packageOrderRouter.get("/", PackageOrderController.getAllPackageOrderHistory);
 packageOrderRouter.get(
-  "/:userId",
-  PackageOrderController.getAllPackageOrderByUserId
+  "/:refKey",
+  PackageOrderController.getAllPackageOrderByUserRefKey
 );
 packageOrderRouter.get(
-  "/:userId/:packageOrderId",
-  PackageOrderController.getSinglePackageOrderByIdByUserId
+  "/:refKey/:packageOrderId",
+  PackageOrderController.getSinglePackageOrderByIdByUserRefKey
 );
 packageOrderRouter.post(
   "/:packageId",
