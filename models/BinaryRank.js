@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       rankLevel: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
       },
       maxPayment: {
         type: DataTypes.DECIMAL(19, 4),
