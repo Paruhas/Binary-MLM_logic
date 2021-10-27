@@ -472,3 +472,66 @@ exports.getUserById = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getParentPositionByRefCode = async (req, res, next) => {
+  try {
+    const { refCode } = req.params;
+
+    if (!refCode || !refCode.trim()) {
+      throw new CustomError(400, "RefCode is undefined");
+    }
+    if (refCode.split("_").length !== 2) {
+      throw new CustomError(400, "RefCode is invalid format");
+    }
+
+    let refCode_key = refCode.split("_")[0];
+    let refCode_position = refCode.split("_")[1];
+
+    const validate_RefCodeOwner = await User.findOne({
+      where: { userRefKey: refCode_key },
+    });
+    if (!validate_RefCodeOwner) {
+      throw new CustomError(400, "User for this ref code not found");
+    }
+
+    const allChild_refCodeOwner_BinaryTree_id = [];
+    const allChild_refCodeOwner_BinaryTree_userData = [validate_RefCodeOwner];
+
+    async function getAllChild_refCodeOwner_BinaryTree(params) {
+      const Fn_arr = [];
+
+      const resultFromDB = await BinaryTree.findAll({
+        where: { parent_id: params },
+        include: [{ model: User, as: "userData" }],
+      });
+
+      if (resultFromDB.length == 0) {
+        return;
+      }
+
+      for (let i = 0; i < resultFromDB.length; i++) {
+        let child = resultFromDB[i];
+
+        if (!allChild_refCodeOwner_BinaryTree_id.includes(child.userId)) {
+          allChild_refCodeOwner_BinaryTree_id.push(child.userId);
+          allChild_refCodeOwner_BinaryTree_userData.push(child.userData);
+
+          Fn_arr.push(child.userId);
+
+          await getAllChild_refCodeOwner_BinaryTree(Fn_arr);
+        }
+      }
+    }
+
+    await getAllChild_refCodeOwner_BinaryTree([validate_RefCodeOwner.id]);
+
+    return res.status(200).json({
+      message: "TEST",
+      parentPosition_userData: allChild_refCodeOwner_BinaryTree_userData,
+    });
+  } catch (error) {
+    console.log(error);
+
+    next(error);
+  }
+};
