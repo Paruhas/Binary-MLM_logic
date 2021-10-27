@@ -29,9 +29,6 @@ app.use("/binary-rank", binaryRankRouter);
 app.use("/commission-history", commissionHistoryRouter);
 app.use("/commission-calculator", commissionCalculatorRouter);
 
-const userRouterNew = require("./routes/userRouterNew");
-app.use("/new-user", userRouterNew);
-
 // Handler Error
 app.use((err, req, res, next) => {
   if (err.httpStatusCode) {
