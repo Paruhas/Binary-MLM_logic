@@ -428,3 +428,47 @@ exports.realRegisterUser = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.realGetUserById = async (req, res, next) => {
+  try {
+    let { id } = req.params;
+    const { refKey } = req.query;
+
+    const findById = { id: id };
+    const findByRefKey = { userRefKey: id };
+
+    let searchByRefKey = false;
+    if (refKey) {
+      searchByRefKey = true;
+    }
+
+    const userData = await User.findOne({
+      where: searchByRefKey ? findByRefKey : findById,
+      include: [
+        {
+          model: PackageDuration,
+        },
+        {
+          model: UserBinaryRank,
+        },
+        {
+          model: CommissionCalculator,
+        },
+        {
+          model: BinaryTree,
+          as: "childId",
+        },
+      ],
+    });
+
+    if (!userData) {
+      throw new CustomError(400, "User not found");
+    }
+
+    res.status(200).json({ userData });
+  } catch (error) {
+    console.log(error);
+
+    next(error);
+  }
+};
